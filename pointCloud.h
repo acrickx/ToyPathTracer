@@ -1,24 +1,17 @@
 #pragma once
 
-#include "Vec3.h"
-#include "scene.h"
 #include<vector>
 #include<cmath>
-
-struct Surfel
-{
-	Vec3f position;
-	Vec3f normal;
-	Vec3f tangent;
-	Vec3f color;
-	float radius;
-	inline Surfel(Vec3f initPos, Vec3f initNorm, Vec3f initTan, float initRad) : position(initPos), normal(initNorm), tangent(initTan), radius(initRad) {}
-};
+#include "Vec3.h"
+#include "scene.h"
+#include "surfel.h"
+#include "BVHnode.h"
 
 class PointCloud {
 private:
 	std::vector<Surfel> m_surfels;
 	float m_samplingRate = 1.f;
+	BVHnode::BVHptr BVHroot;
 public:
 	inline PointCloud(float samplingRate) : m_samplingRate(samplingRate) {};
 	//using blue noise sampling
@@ -27,10 +20,10 @@ public:
 		const std::vector<Mesh>& meshes = scene.meshes();
 		for (int i = 0; i < meshes.size(); i++)
 		{			
-			for (int j = 0; j < meshes[i].getIndices().size(); j++)
+			for (int j = 0; j < meshes[i].indices().size(); j++)
 			{
-				const Vec3i& triangleIndices = meshes[i].getIndices()[j];
-				const Vec3<Vec3f>& triangle = meshes[i].getTriangle(triangleIndices);
+				const Vec3i& triangleIndices = meshes[i].indices()[j];
+				const Vec3<Vec3f>& triangle = meshes[i].triangle(triangleIndices);
 				float S = (cross(triangle[1] - triangle[0], triangle[2] - triangle[0])).length() / 2.f;
 				int Nsamples = int(m_samplingRate * S);
 				std::cout << S << "   " << Nsamples << std::endl;
@@ -50,6 +43,7 @@ public:
 			}
 		}
 	}
+	inline void computeBVH() { BVHroot = BVHnode::BVHptr(new BVHnode(m_surfels)); };
 	//generate tris from surfels to debug the generated PointCloud
 	inline void triangleFromSurfels(std::vector<Vec3<Vec3f>>& positions, std::vector<Vec3<Vec3f>>& normals)
 	{		

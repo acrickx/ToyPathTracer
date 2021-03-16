@@ -1,4 +1,4 @@
-#include "AABB.h"
+#include "boundingVolume.h"
 
 bool AABB::hit(Ray ray, float& tmin, float& tmax) const
 {

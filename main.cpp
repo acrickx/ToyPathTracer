@@ -59,18 +59,21 @@ int main(int argc, char* argv[])
     std::cout << "computing point cloud ... \n";
     pointCloud.computePointCloud(scene);
     std::cout << "done. \n";
-    std::cout << "Point Cloud composed of : " << pointCloud.surfels().size() << " surfels." << std::endl;
-    std::cout << "Preparing display of Point Cloud ... \n";
-    std::vector<Vec3<Vec3f>> pos, norm;
-    pointCloud.triangleFromSurfels(pos, norm);
-    //render image
-    RayTracer rt;
-    std::cout << "Start rendering ... \n";
-    rt.render(pos, norm, scene.camera(), lights, ground.material(), sceneImage);
-    std::cout << "Done. \n";
-    std::cout << "Saving image ... \n";
-    sceneImage.savePPM("PointCloudDebug.ppm");
-    std::cout << "Done. \n";
+    std::cout << "computing BVH for point cloud ... \n";
+    pointCloud.computeBVH();
+    std::cout << "done. \n";
+    //std::cout << "Point Cloud composed of : " << pointCloud.surfels().size() << " surfels." << std::endl;
+    //std::cout << "Preparing display of Point Cloud ... \n";
+    //std::vector<Vec3<Vec3f>> pos, norm;
+    //pointCloud.triangleFromSurfels(pos, norm);
+    ////render image
+    //RayTracer rt;
+    //std::cout << "Start rendering ... \n";
+    //rt.render(pos, norm, scene.camera(), lights, ground.material(), sceneImage);
+    //std::cout << "Done. \n";
+    //std::cout << "Saving image ... \n";
+    //sceneImage.savePPM("PointCloudDebug.ppm");
+    //std::cout << "Done. \n";
     return 0;
 }
 

@@ -34,3 +34,26 @@ public:
 	inline const Vec3f max() const { return m_maxCorner; };
 };
 
+class Sphere
+{
+private:
+	Vec3f m_center;
+	float m_radius;
+public:
+	Sphere() : m_center(Vec3f(0, 0, 0)), m_radius(0.f) {};
+	Sphere(Vec3f center, float radius) : m_center(center), m_radius(radius) {};
+	bool hit(Ray ray, float& tmin, float& tmax) const;
+	inline bool contains(const Vec3f& position) const
+	{
+		if ((m_center - position).length() < m_radius) return true;
+		else return false;
+	}
+	//accessors
+	inline Vec3f center() { return m_center; };
+	inline float radius() { return m_radius; };
+	inline const Vec3f center() const { return m_center; };
+	inline const float radius() const  { return m_radius; };
+	//modifiers
+	inline void setRadius(float newVal) { m_radius = newVal; }
+};						  
+

@@ -5,7 +5,7 @@
 #include <omp.h>
 #include"lightSource.h"
 #include"camera.h"
-#include"AABB.h"
+#include"boundingVolume.h"
 
 
 struct Material
@@ -71,21 +71,22 @@ class Mesh
 		Mesh(Material _material) : m_mat(_material) {};
 		void loadOFF(std::string filepath);
 		void computeNormals();
+		inline const Vec3f interpPos(Vec3f barCoord, Vec3i triangleIndices) const { return (barCoord[2] * m_vertices[triangleIndices[0]] + barCoord[0] * m_vertices[triangleIndices[1]] + barCoord[1] * m_vertices[triangleIndices[2]]); } 
+		inline const Vec3f interpNorm(Vec3f barCoord, Vec3i triangleIndices) const { return normalize(barCoord[2] * m_normals[triangleIndices[0]] + barCoord[0] * m_normals[triangleIndices[1]] + barCoord[1] * m_normals[triangleIndices[2]]); } 
+		//accessors
 		inline std::vector<Vec3f>& vertices() { return m_vertices; }
 		inline std::vector<Vec3i>& indices() { return m_indices; }
 		inline Vec3<Vec3f> triangle(Vec3i triangleIndices) { return Vec3<Vec3f>(m_vertices[triangleIndices[0]], m_vertices[triangleIndices[1]], m_vertices[triangleIndices[2]]);}
 		inline std::vector<Vec3f>& normals() { return m_normals; }
 		inline AABB& boundingBox() { return m_boundingBox; }
 		inline Material material() { return m_mat; }
-		//const version
-		inline const std::vector<Vec3f>& getVertices() const { return m_vertices; }
-		inline const std::vector<Vec3i>& getIndices() const { return m_indices; }
-		inline const Vec3<Vec3f> getTriangle(Vec3i triangleIndices) const { return Vec3<Vec3f>(m_vertices[triangleIndices[0]], m_vertices[triangleIndices[1]], m_vertices[triangleIndices[2]]); }
-		inline const std::vector<Vec3f>& getNormals() const { return m_normals; }
-		inline const AABB& getBoundingBox() const { return m_boundingBox; }
-		inline const Material getMaterial() const { return m_mat; }
-		inline const Vec3f interpPos(Vec3f barCoord, Vec3i triangleIndices) const { return (barCoord[2] * m_vertices[triangleIndices[0]] + barCoord[0] * m_vertices[triangleIndices[1]] + barCoord[1] * m_vertices[triangleIndices[2]]); } 
-		inline const Vec3f interpNorm(Vec3f barCoord, Vec3i triangleIndices) const { return normalize(barCoord[2] * m_normals[triangleIndices[0]] + barCoord[0] * m_normals[triangleIndices[1]] + barCoord[1] * m_normals[triangleIndices[2]]); } 
+		//const accessors
+		inline const std::vector<Vec3f>& vertices() const { return m_vertices; }
+		inline const std::vector<Vec3i>& indices() const { return m_indices; }
+		inline const Vec3<Vec3f> triangle(Vec3i triangleIndices) const { return Vec3<Vec3f>(m_vertices[triangleIndices[0]], m_vertices[triangleIndices[1]], m_vertices[triangleIndices[2]]); }
+		inline const std::vector<Vec3f>& normals() const { return m_normals; }
+		inline const AABB& boundingBox() const { return m_boundingBox; }
+		inline const Material material() const { return m_mat; }
 };
 
 
