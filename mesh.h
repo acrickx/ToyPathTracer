@@ -1,0 +1,92 @@
+#pragma once
+#include<vector>
+#include<fstream>
+#include<string>
+#include <omp.h>
+#include"lightSource.h"
+#include"camera.h"
+#include"AABB.h"
+
+
+struct Material
+{
+public:
+	Vec3f albedo;
+	float diffuse;
+	float roughness;
+	float metallic;
+	Material() { albedo = Vec3f(0.5f, 0.5f, 0.5f); diffuse = 1.f; roughness = 0.1f; metallic = 0.7f; }
+	Material(Vec3f _albedo, float _diffuse, float _roughness, float _specular) : albedo(_albedo), diffuse(_diffuse), roughness(_roughness), metallic(_specular) {};
+	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, lightPtr light, Camera eye) const {
+		float diffuseResponse(diffuse / (float)M_PI);
+		Vec3f wi = normalize(light->getPosition() - position);
+		Vec3f w0 = normalize(eye.getPosition() - position);
+		Vec3f wh = normalize(wi + w0);
+		Vec3f specularResponse = reflectance(wi, w0, normal);
+		Vec3f colorResponse = light->colorResponse() * (Vec3f(diffuseResponse) + specularResponse) * std::max(dot(normal, wi), 0.f);
+		return colorResponse;
+	};
+private:
+	inline Vec3f reflectance(Vec3f wi, Vec3f wo, Vec3f n) const
+	{
+		float alpha = roughness * roughness;
+		Vec3f wh = normalize(wi + wo);
+		Vec3f F0(0.04f);
+		F0 = mix(F0, albedo, metallic);
+		return (G_GGX(wi, wo, alpha, n) * F(std::max(dot(wi, wh), 0.f), F0) * D(alpha, wh, n)) / (4 * dot(n, wi) * dot(n, wo));
+	}
+	float G(Vec3f w, Vec3f n, float alpha) const
+	{
+		return 2.0 * (dot(n, w)) / (dot(n, w) + sqrt(pow(alpha, 2) + (1 - pow(alpha, 2)) * pow(dot(n, w), 2)));
+	}
+
+	float G_GGX(Vec3f wi, Vec3f wo, float alpha, Vec3f n) const
+	{
+		return G(wi, n, alpha) * G(wo, n, alpha);
+	}
+
+	Vec3f F(float cosTheta, Vec3f f0) const
+	{
+		return f0 + (Vec3f(1.f, 1.f, 1.f) - f0) * pow(1.0 - cosTheta, 5.0);
+	}
+	float D(float alpha, Vec3f m, Vec3f n) const
+	{
+		return (pow(alpha, 2)) / (3.1415926 * pow((1 + pow(dot(n, m), 2) * (pow(alpha, 2) - 1)), 2));
+	}
+};
+
+class Mesh
+{
+	private:
+		std::vector<Vec3f> m_vertices;
+		std::vector<Vec3i> m_indices;
+		std::vector<Vec3f> m_normals;
+		Material m_mat;		
+		AABB m_boundingBox;
+		inline Vec3f computeNormal(Vec3<Vec3f> triangle) { return normalize(cross(triangle[1] - triangle[0], triangle[2] - triangle[0]));}
+		template <class T>
+		void parseLineToVec3(std::string in, Vec3<T>& const vec);
+	public:	
+		Mesh() {}
+		Mesh(Material _material) : m_mat(_material) {};
+		void loadOFF(std::string filepath);
+		void computeNormals();
+		inline std::vector<Vec3f>& vertices() { return m_vertices; }
+		inline std::vector<Vec3i>& indices() { return m_indices; }
+		inline Vec3<Vec3f> triangle(Vec3i triangleIndices) { return Vec3<Vec3f>(m_vertices[triangleIndices[0]], m_vertices[triangleIndices[1]], m_vertices[triangleIndices[2]]);}
+		inline std::vector<Vec3f>& normals() { return m_normals; }
+		inline AABB& boundingBox() { return m_boundingBox; }
+		inline Material material() { return m_mat; }
+		//const version
+		inline const std::vector<Vec3f>& getVertices() const { return m_vertices; }
+		inline const std::vector<Vec3i>& getIndices() const { return m_indices; }
+		inline const Vec3<Vec3f> getTriangle(Vec3i triangleIndices) const { return Vec3<Vec3f>(m_vertices[triangleIndices[0]], m_vertices[triangleIndices[1]], m_vertices[triangleIndices[2]]); }
+		inline const std::vector<Vec3f>& getNormals() const { return m_normals; }
+		inline const AABB& getBoundingBox() const { return m_boundingBox; }
+		inline const Material getMaterial() const { return m_mat; }
+		inline const Vec3f interpPos(Vec3f barCoord, Vec3i triangleIndices) const { return (barCoord[2] * m_vertices[triangleIndices[0]] + barCoord[0] * m_vertices[triangleIndices[1]] + barCoord[1] * m_vertices[triangleIndices[2]]); } 
+		inline const Vec3f interpNorm(Vec3f barCoord, Vec3i triangleIndices) const { return normalize(barCoord[2] * m_normals[triangleIndices[0]] + barCoord[0] * m_normals[triangleIndices[1]] + barCoord[1] * m_normals[triangleIndices[2]]); } 
+};
+
+
+
