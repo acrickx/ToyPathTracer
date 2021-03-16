@@ -21,4 +21,8 @@ private:
     BVHptr m_right = nullptr;
     Sphere m_sphere{};
     std::vector<Surfel> m_surfels;
+    //normal representation
+    float m_normalConeAngle;
+    Vec3f m_normal;
+
 };

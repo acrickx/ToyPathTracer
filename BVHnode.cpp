@@ -8,7 +8,6 @@ BVHnode::BVHnode(const std::vector<Surfel>& surfels)
 
  BVHnode::BVHnode(const std::vector<Surfel>& surfels, Sphere sphere)
 {
-    //std::cout << "n_surfels : " << surfels.size() <<  " |  sphere - center : " << sphere.center() << " radius : " << sphere.radius() << std::endl;
     //stop condition
     if (surfels.size() <= 1)
     {
@@ -31,19 +30,22 @@ BVHnode::BVHnode(const std::vector<Surfel>& surfels)
         else if (diff[1] >= std::max(diff[0], diff[2])) dimension = 1;
         else if (diff[2] >= std::max(diff[1], diff[0])) dimension = 2;
         std::vector<float> centers;
-        //compute triangle barycenter
+        //initialize vector of surfel positions for sorting
         for (int i = 0; i < surfels.size(); i++)
         {
             centers.push_back(surfels[i].position[dimension]);
         }
         std::sort(centers.begin(), centers.end());
         float median = centers[centers.size() / 2];
-        //sort surfels in two subsets
+        //sort surfels in two subsets + compute average normal
         std::vector<Surfel> surfelsLeft, surfelsRight;
+        Vec3f totalNormal;
         bool addLeft = false;
         for (int i = 0; i < surfels.size(); i++)
         {
-            Vec3f center = surfels[i].position;      
+            Vec3f center = surfels[i].position;  
+            //add normal to total for average
+            totalNormal += surfels[i].normal;
             //altern left and right if positions are equal
             if (center[dimension] == median)
             {
@@ -62,23 +64,33 @@ BVHnode::BVHnode(const std::vector<Surfel>& surfels)
                 surfelsRight.push_back(surfels[i]);
             }
         }
+        //assign normal value
+        m_normal = normalize(totalNormal / surfels.size());
         //compute BoundingSphere
         Sphere leftSphere = computeBoundingSphere(surfelsLeft);
         Sphere rightSphere = computeBoundingSphere(surfelsRight);
         m_left = BVHptr(new BVHnode(surfelsLeft, leftSphere)); 
         m_right = BVHptr(new BVHnode(surfelsRight, rightSphere));
+        std::cout << "n_surfels : " << surfels.size() <<  " |  sphere - center : " << sphere.center() << " radius : " << sphere.radius() << " | angle : " << m_normalConeAngle << std::endl;
     }    
 }
 
  Sphere BVHnode::computeBoundingSphere(std::vector<Surfel> surfels)
  {
      const Vec3f& init = surfels[0].position;
-     //First step : going through the points to find extreme points along each direction
+     //First step : going through the points to find extreme points along each direction, + compute normal angle
      Vec3f minX = init, minY = init, minZ = init, maxX = init, maxY = init, maxZ = init;
      for (int i = 0; i < surfels.size(); i++)
      {
-         Vec3f center = surfels[i].position;
+         //test all normals to find max cone angle
+         if (surfels[i].normal != m_normal)
+         {
+             float angle = acos((dot(surfels[i].normal, m_normal)));
+             if (abs(angle) > abs(m_normalConeAngle)) m_normalConeAngle = angle;
+             if (angle == 0) std::cout << "angle = 0 : " << surfels[i].normal << " | " << m_normal << std::endl;
+         }
          //test center to find extreme points in each direction & filling the two subsets
+         Vec3f center = surfels[i].position;
          if (center[0] < minX[0]) minX = center;
          else if (center[0] > maxX[0]) maxX = center;
          if (center[1] < minY[1]) minY = center;
