@@ -71,7 +71,7 @@ BVHnode::BVHnode(const std::vector<Surfel>& surfels)
         Sphere rightSphere = computeBoundingSphere(surfelsRight);
         m_left = BVHptr(new BVHnode(surfelsLeft, leftSphere)); 
         m_right = BVHptr(new BVHnode(surfelsRight, rightSphere));
-        std::cout << "n_surfels : " << surfels.size() <<  " |  sphere - center : " << sphere.center() << " radius : " << sphere.radius() << " | angle : " << m_normalConeAngle << std::endl;
+        //std::cout << "n_surfels : " << surfels.size() <<  " |  sphere - center : " << sphere.center() << " radius : " << sphere.radius() << " | angle : " << m_normalConeAngle << std::endl;
     }    
 }
 

@@ -1,34 +1,5 @@
 #include "rayTracer.h"
 
-//basic triangle intersection test for ray/triangle intersection test
- bool RayTracer::testTriangleIntersection(Ray ray, Vec3<Vec3f> trianglePos, Vec3f& barCoord, float& parT, float threshold = 0.0001f)
-{	
-	Vec3f e0 = trianglePos[1] - trianglePos[0];
-	Vec3f e1 = trianglePos[2] - trianglePos[0];
-	Vec3f q = cross(ray.direction, e1);
-	float a = dot(e0, q);
-	if (fabs(a) < threshold)
-	{
-		return false;
-	}	
-	Vec3f s = ray.origin - trianglePos[0];
-	Vec3f r = cross(s, e0);
-	float b0 = dot(s, q)/a;
-	float b1 = dot(r, ray.direction)/a;
-	float b2 = 1 - b0 - b1;
-	if (b0 < 0 || b1 < 0 || b0 > 1 || b1>1)
-	{
-		return false;
-	}
-	float t = dot(e1, r)/a;
-	if (b0 >= 0.f && b1 >= 0.f && b2 >=0.f && b0+b1+b2<=1.f)
-	{		
-		barCoord = Vec3f(b0, b1, b2);
-		parT = t;
-		return true;
-	}
-	return false;
-}
 
 //called to render image from scene
 Image RayTracer::render(Scene scene, Image& renderImage, size_t rayPerPixel = 8)
@@ -57,7 +28,7 @@ Image RayTracer::render(Scene scene, Image& renderImage, size_t rayPerPixel = 8)
 				Vec3f intersectionPos, intersectionNormal; size_t meshIndex; size_t triangleIndex;
 				intersectionFound = rayTrace(scatteredRay, scene, intersectionPos, intersectionNormal, meshIndex, triangleIndex);
 				if (intersectionFound)
-				{
+				{					
 					if (!intersection) intersection = true;
 					totalColorResponse += shade(sceneMeshes[meshIndex], intersectionPos, intersectionNormal, scene) / (float)rayPerPixel;										
 				}
@@ -84,7 +55,7 @@ bool RayTracer::rayTrace(Ray ray, Scene scene, Vec3f& intersectionPos, Vec3f& in
 			Vec3i triangleIndices = sceneMesh.indices()[k]; Vec3<Vec3f> trianglePositions = sceneMesh.triangle(triangleIndices);
 			//test intersection
 			Vec3f barCoord; float parT;
-			if (testTriangleIntersection(ray, trianglePositions, barCoord, parT))
+			if (ray.testTriangleIntersection(trianglePositions, barCoord, parT))
 			{
 				//zmax for z buffer test				
 				if (parT >0 && zmax > parT)
@@ -148,7 +119,7 @@ bool RayTracer::rayTrace(Ray ray, const std::vector<Vec3<Vec3f>>& positions, con
 		Vec3<Vec3f> triangleNormals = normals[k];
 		//test intersection
 		Vec3f barCoord; float parT;
-		if (testTriangleIntersection(ray, trianglePositions, barCoord, parT))
+		if (ray.testTriangleIntersection(trianglePositions, barCoord, parT))
 		{
 			//zmax for z buffer test				
 			if (parT > 0 && zmax > parT)
@@ -182,7 +153,7 @@ bool RayTracer::rayTrace(Ray ray, Scene scene)
 			Vec3i triangleIndices = sceneMesh.indices()[k]; Vec3<Vec3f> trianglePositions = sceneMesh.triangle(triangleIndices);
 			//test intersection
 			Vec3f barCoord; float parT = 0;
-			if (testTriangleIntersection(ray, trianglePositions, barCoord, parT))
+			if (ray.testTriangleIntersection(trianglePositions, barCoord, parT))
 			{
 				intersectFound = true;
 			}

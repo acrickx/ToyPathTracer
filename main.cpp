@@ -5,11 +5,23 @@
 #include "lightSource.h"
 #include "rayTracer.h"
 #include "pointCloud.h"
+#include"pointBasedRenderer.h"
  
 using namespace std;
 
 int main(int argc, char* argv[])
 {
+    //std::cout << "Preparing display of Point Cloud ... \n";
+    //std::vector<Vec3<Vec3f>> pos, norm;
+    //pointCloud.triangleFromSurfels(pos, norm);
+    ////render image
+    //RayTracer rt;
+    //std::cout << "Start rendering ... \n";
+    //rt.render(pos, norm, scene.camera(), lights, ground.material(), sceneImage);
+    //std::cout << "Done. \n";
+    //std::cout << "Saving image ... \n";
+    //sceneImage.savePPM("PointCloudDebug.ppm");
+    //std::cout << "Done. \n";
     size_t width=300, height=200;
     string filename="backgroundImage.ppm";
     //"Usage : ./MyRayTracer –width <width> -height <height> -output <filename.ppm>" << std::endl;
@@ -61,19 +73,20 @@ int main(int argc, char* argv[])
     std::cout << "done. \n";
     std::cout << "computing BVH for point cloud ... \n";
     pointCloud.computeBVH();
-    std::cout << "done. \n";
-    //std::cout << "Point Cloud composed of : " << pointCloud.surfels().size() << " surfels." << std::endl;
-    //std::cout << "Preparing display of Point Cloud ... \n";
-    //std::vector<Vec3<Vec3f>> pos, norm;
-    //pointCloud.triangleFromSurfels(pos, norm);
-    ////render image
-    //RayTracer rt;
-    //std::cout << "Start rendering ... \n";
-    //rt.render(pos, norm, scene.camera(), lights, ground.material(), sceneImage);
-    //std::cout << "Done. \n";
-    //std::cout << "Saving image ... \n";
-    //sceneImage.savePPM("PointCloudDebug.ppm");
-    //std::cout << "Done. \n";
+    std::cout << "done. \n";    
+    std::cout << "Point Cloud composed of : " << pointCloud.surfels().size() << " surfels." << std::endl;
+    //testing microbuffer
+    MicroBuffer testMB(8, Vec3f(1, 1, 1), Vec3f(-1, -1, -1));
+    int i, j;
+    testMB.positionToPixel(Vec3f(1, 1, 1), i, j);
+    std::cout << " i :" << i << ", j : " << j << std::endl;
+    testMB.positionToPixel(Vec3f(1, 0.75f, 1), i, j);
+    std::cout << " i :" << i << ", j : " << j << std::endl;
+    testMB.positionToPixel(Vec3f(0.5f, 0.5f, 0.5f), i, j);
+    std::cout << " i :" << i << ", j : " << j << std::endl;
+    //Point based Rendering
+    //PointBasedRenderer renderer;
+    //renderer.render(scene, pointCloud, sceneImage, 8);
     return 0;
 }
 

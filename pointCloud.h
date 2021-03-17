@@ -11,7 +11,7 @@ class PointCloud {
 private:
 	std::vector<Surfel> m_surfels;
 	float m_samplingRate = 1.f;
-	BVHnode::BVHptr BVHroot;
+	BVHnode::BVHptr m_BVHroot;
 public:
 	inline PointCloud(float samplingRate) : m_samplingRate(samplingRate) {};
 	//using blue noise sampling
@@ -43,7 +43,7 @@ public:
 			}
 		}
 	}
-	inline void computeBVH() { BVHroot = BVHnode::BVHptr(new BVHnode(m_surfels)); };
+	inline void computeBVH() { m_BVHroot = BVHnode::BVHptr(new BVHnode(m_surfels)); };
 	//generate tris from surfels to debug the generated PointCloud
 	inline void triangleFromSurfels(std::vector<Vec3<Vec3f>>& positions, std::vector<Vec3<Vec3f>>& normals)
 	{		
@@ -67,4 +67,5 @@ public:
 	inline const std::vector<Surfel> surfels() const { return m_surfels; }
 	inline float samplingRate() { return m_samplingRate; }
 	inline const float samplingRate() const { return m_samplingRate; }
+	inline const BVHnode::BVHptr BVHroot() const { return m_BVHroot; }
 };

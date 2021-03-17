@@ -14,7 +14,12 @@ public:
     typedef std::shared_ptr<BVHnode> BVHptr;    
     BVHnode(const std::vector<Surfel>& surfels);    
     BVHnode(const std::vector<Surfel>& surfels, Sphere sphere);
-    Sphere computeBoundingSphere(std::vector<Surfel> surfels);    
+    Sphere computeBoundingSphere(std::vector<Surfel> surfels);  
+    inline const Vec3f position() const { return m_sphere.center(); }
+    inline const Vec3f normal() const { return m_normal; }
+    inline const float radius() const { return m_sphere.radius(); }
+    inline const BVHptr left() const { return m_left; }
+    inline const BVHptr right() const { return m_right; }
 
 private:
     BVHptr m_left = nullptr;
@@ -24,5 +29,4 @@ private:
     //normal representation
     float m_normalConeAngle;
     Vec3f m_normal;
-
 };
