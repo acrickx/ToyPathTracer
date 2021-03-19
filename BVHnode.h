@@ -6,7 +6,7 @@
 #include "mesh.h"
 #include "boundingVolume.h"
 #include "surfel.h"
-#include "scene.h"
+#include "rayTracer.h"
 
 class BVHnode {
 
@@ -22,7 +22,7 @@ public:
     inline const BVHptr left() const { return m_left; }
     inline const BVHptr right() const { return m_right; }
     inline const std::vector<Surfel> const surfels() { return m_surfels; }
-    Vec3f computeColor(const Scene& scene, Material mat);
+    Vec3f getColor();
 
 private:
     BVHptr m_left = nullptr;

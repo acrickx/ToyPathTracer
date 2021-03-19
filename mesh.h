@@ -15,7 +15,7 @@ public:
 	float diffuse;
 	float roughness;
 	float metallic;
-	Material() { albedo = Vec3f(0.5f, 0.5f, 0.5f); diffuse = 1.f; roughness = 0.1f; metallic = 0.7f; }
+	Material() { albedo = Vec3f(0.5f, 0.5f, 0.5f); diffuse = 1.f; roughness = 0.5f; metallic = 0.5f; }
 	Material(Vec3f _albedo, float _diffuse, float _roughness, float _specular) : albedo(_albedo), diffuse(_diffuse), roughness(_roughness), metallic(_specular) {};
 	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, lightPtr light, Camera eye) const {
 		float diffuseResponse(diffuse / (float)M_PI);

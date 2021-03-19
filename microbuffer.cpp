@@ -80,12 +80,13 @@
 				{
 					setDepthValue(indexI, indexJ, distance);
 					setIndex(indexI, indexJ, node);
-					std::cout << "3" << std::endl;
+					setColorValue(indexI, indexJ, node->getColor() * BVHsolidAngle);
 				}
 			}
 		}
 	}
 
+	//ray cast leave node for precise rasterization
 	void MicroBuffer::postTraversalRayCasting()
 	{
 		//std::cout << "postTraversalList size : " << m_postTraversalList.size() << std::endl;
@@ -103,12 +104,31 @@
 					{
 						if (parT < depth(i, j))
 						{
-							std::cout << "4" << std::endl;
 							setDepthValue(i, j, parT);
 							setIndex(i, j, m_postTraversalList[k]);
+							setColorValue(i, j, surfel.color*M_PI*surfel.radius*surfel.radius/parT);
 						}
 					}
 				}
 			}
 		}
+	}
+
+	//convolve microbuffer with BRDF
+	Vec3f MicroBuffer::convolveBRDF(Material mat, const Scene& scene)
+	{
+		std::vector<lightPtr> lights = scene.lightSources();
+		Vec3f totalColorResponse;
+		for (int i = 0; i < m_width; i++)
+		{
+			for (int j = 0; j < m_height; j++)
+			{
+				for (int k = 0; k < lights.size(); k++)
+				{
+					totalColorResponse += color(i, j) * mat.evaluateColorResponse(m_gatheringPos, m_gatheringNormal, lights[k], scene.camera());
+				}
+			}
+		}
+		std::cout << totalColorResponse << std::endl;
+		return totalColorResponse;
 	}

@@ -24,51 +24,55 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 			bool intersectionFound = false;	
 			Ray ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate(float(i) / width, 1.f - (float)j / height)));
 			Vec3f intersectionPos, intersectionNormal; size_t meshIndex; size_t triangleIndex;
-			intersectionFound = rayTrace(ray, scene, intersectionPos, intersectionNormal, meshIndex, triangleIndex);			
+			intersectionFound = RayTracer::rayTrace(ray, scene, intersectionPos, intersectionNormal, meshIndex, triangleIndex);			
 			if (intersectionFound)
 			{				
 				//microrendering
 				MicroBuffer mBuffer(microBufferSize, intersectionPos, intersectionNormal);				
 				mBuffer.fillMicroBuffer(root);
-				mBuffer.postTraversalRayCasting();				
+				mBuffer.postTraversalRayCasting();
+				renderImage(i,j) = mBuffer.convolveBRDF(scene.meshes()[meshIndex].material(), scene);
 			}			
 		}
 	}
 	return renderImage;
 }
 
-//actually raytrace the scene with a given ray
-bool PointBasedRenderer::rayTrace(Ray ray, Scene scene, Vec3f& intersectionPos, Vec3f& intersectionNormal, size_t& meshIndex, size_t& triangleIndex)
+//called to render image from positions, colors and normals directly (debug point cloud)
+Image PointBasedRenderer::renderPointCloud(PointCloud pointCloud, const Scene& scene, Image& renderImage)
 {
-	std::vector<Mesh> sceneMeshes = scene.meshes();
-	float zmax = std::numeric_limits<float>::max();
-	bool intersectFound = false;
-	for (int l = 0; l < sceneMeshes.size(); l++)
+	std::vector<Surfel> surfels = pointCloud.surfels();
+	std::vector<lightPtr> lights = scene.lightSources();
+	std::cout << surfels.size() << std::endl;
+	Material surfelMat;
+	//fill background of the image with arbitrary color
+	renderImage.fillBackground(Vec3f(1, 0, 1), Vec3f(0.5f, 0.5f, 1));
+	int width = renderImage.getWidth(); int height = renderImage.getHeight();
+	for (int j = 0; j < height; j++)
 	{
-		Mesh sceneMesh = scene.meshes()[l];
+		//display progress with dots
+		size_t progress = 0;
+		if (progress % 10 == 0) std::cout << ".";
+		progress++;
 		#pragma omp parallel for
-		for (int k = 0; k < sceneMesh.indices().size(); k++)
+		for (int i = 0; i < width; i++)
 		{
-			//get triangle info
-			Vec3i triangleIndices = sceneMesh.indices()[k]; Vec3<Vec3f> trianglePositions = sceneMesh.triangle(triangleIndices);
-			//test intersection
-			Vec3f barCoord; float parT;
-			if (ray.testTriangleIntersection(trianglePositions, barCoord, parT))
+			//create rays for intersection test
+			Ray ray(scene.camera().getPosition(), scene.camera().getImageCoordinate(float(i) / width, 1.f - (float)j / height));
+			float zbuffer = 1000000;
+			for (int k = 0; k < surfels.size(); k++)
 			{
-				//zmax for z buffer test				
-				if (parT > 0 && zmax > parT)
+				Surfel surfel = surfels[k];
+				Vec3f intersectionPos; float parT;
+				bool intersectionFound = false;
+				intersectionFound = ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT);
+				if (intersectionFound && parT <zbuffer)
 				{
-					intersectFound = true;
-					zmax = parT;
-					//return mesh index
-					meshIndex = l;
-					triangleIndex = k;
-					//return intersection position and normal by interpoling using barycentric coordinates
-					intersectionPos = sceneMesh.interpPos(barCoord, triangleIndices);
-					intersectionNormal = sceneMesh.interpNorm(barCoord, triangleIndices);
+					zbuffer = parT;
+					renderImage(i,j) = surfelMat.albedo + surfelMat.evaluateColorResponse(surfel.position, surfel.normal, lights[0], scene.camera());
 				}
 			}
 		}
 	}
-	return intersectFound;
+	return renderImage;
 }

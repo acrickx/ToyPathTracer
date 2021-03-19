@@ -37,27 +37,30 @@ struct Ray
 
 	bool testPlaneIntersection(Vec3f planePos, Vec3f planeNormal, Vec3f& intersectionPos, float& parT, float threshold = 0.0001f)
 	{
-		float D = dot(planeNormal, planePos);
-		float v0 = -(dot(planeNormal, origin) + D);
-		float vd = dot(planeNormal, direction);
-		parT = v0 / vd;
-		if (parT < 0) return false;
-		else
+		normalize(planeNormal);
+		float denom = abs(dot(planeNormal, direction));
+		if(denom > 1e-6)
 		{
-			intersectionPos = origin + direction * parT;
-			return true;
+			parT = dot(planePos - origin, planeNormal)/denom;
+			if (parT >= 0)
+			{
+				intersectionPos = origin + parT * direction;
+				return true;
+			}
 		}
+		return false;
 	}
 
 	bool testDiscIntersection(Vec3f discPos, Vec3f discNormal, float radius, Vec3f& intersectionPos, float& parT, float threshold = 0.0001f)
 	{
 		if (testPlaneIntersection(discPos, discNormal, intersectionPos, parT, threshold))
 		{
-			if ((intersectionPos - discPos).length() <= radius)
+			float radius2 = radius * radius;
+			if ((intersectionPos - discPos).squaredLength() <= radius2);
 			{
 				return true;
-			}
-			else return false;
+			}	
 		}
+		return false;
 	}
 };

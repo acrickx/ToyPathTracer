@@ -35,16 +35,19 @@ public:
 					Vec3f samplePos = meshes[i].interpPos(sampleBarCoord, triangleIndices);					
 					Vec3f sampleNorm = meshes[i].interpNorm(sampleBarCoord, triangleIndices);
 					Vec3f sampleTan = normalize(cross(sampleNorm, triangle[1] - triangle[0]));
+					Vec3f sampleColor = RayTracer::shade(samplePos, sampleNorm, meshes[i].material(), scene);
 					float sampleRad = sqrt(1.f / m_samplingRate * M_PI);
-					Surfel sampleSurfel = Surfel(samplePos, sampleNorm, sampleTan, sampleRad);
+					Surfel sampleSurfel = Surfel(samplePos, sampleNorm, sampleTan, sampleColor, sampleRad);
 					m_surfels.push_back(sampleSurfel);
 				}
 			}
 		}
 	}
+
+
 	inline void computeBVH() { m_BVHroot = BVHnode::BVHptr(new BVHnode(m_surfels)); };
 	//generate tris from surfels to debug the generated PointCloud
-	inline void triangleFromSurfels(std::vector<Vec3<Vec3f>>& positions, std::vector<Vec3<Vec3f>>& normals)
+	inline void triangleFromSurfels(std::vector<Vec3<Vec3f>>& positions, std::vector<Vec3<Vec3f>>& normals, std::vector<Vec3f> colors)
 	{		
 		for (int i = 0; i < m_surfels.size(); i++)
 		{
@@ -59,6 +62,7 @@ public:
 			normals.push_back(n);
 			positions.push_back(triangle2);
 			normals.push_back(n);
+			colors.push_back(m_surfels[i].color);
 		}
 	}
 	//accessors

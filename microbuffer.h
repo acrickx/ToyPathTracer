@@ -25,12 +25,9 @@ public:
 	};
 	//accessors
 	const size_t size() const { return m_width; }
-	inline const Vec3f& operator() (size_t i, size_t j) const { return m_colors[j * m_width + i]; }
-	inline Vec3f& operator() (size_t i, size_t j) { return m_colors[j * m_width + i]; }
+	inline const Vec3f color(size_t i, size_t j) const { return m_colors[j * m_width + i]; }
 	inline const float depth(size_t i, size_t j) const { return m_zBuffer[j * m_width + i]; }	
-	inline float depth(size_t i, size_t j) { return m_zBuffer[j * m_width + i]; }	
-	std::vector<Vec3f> colors() { return m_colors; }
-	const std::vector<Vec3f> colors() const { return m_colors; }
+	inline const BVHnode::BVHptr index(size_t i, size_t j) const { return m_indexBuffer[j * m_width + i]; }
 	inline void setColorValue(size_t i, size_t j, Vec3f colorValue) { m_colors[j * m_width + i] = colorValue; };
 	inline void setDepthValue(size_t i, size_t j, float depthValue) { m_zBuffer[j * m_width + i] = depthValue; };
 	inline void setIndex(size_t i, size_t j, BVHnode::BVHptr index) { m_indexBuffer[j * m_width + i] = index; };
@@ -43,6 +40,7 @@ public:
 	//rendering
 	void fillMicroBuffer(BVHnode::BVHptr node);
 	void postTraversalRayCasting();
+	Vec3f convolveBRDF(Material mat, const Scene& scene);
 
 
 private:
