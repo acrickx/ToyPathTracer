@@ -16,11 +16,11 @@ public:
 		if (m_gatheringNormal == Vec3f(0, 1, 0)) { m_horizontal = normalize(cross(Vec3f(0, 0, -1),m_gatheringNormal)); }
 		else m_horizontal = normalize(cross(Vec3f(0, 1, 0), m_gatheringNormal));
 		m_vertical = normalize(cross(m_gatheringNormal, m_horizontal));
-		m_bottomLeftCorner = m_gatheringPos - (1 / 2.f) * (m_horizontal + m_vertical);
+		m_bottomLeftCorner = m_gatheringPos - (m_horizontal + m_vertical);
 		m_width = m_height = size;
 		//initialize vectors
 		m_colors = std::vector<Vec3f>(size * size);
-		m_zBuffer = std::vector<float>(size * size);
+		m_zBuffer = std::vector<float>(size * size, std::numeric_limits<float>().max());
 		m_indexBuffer = std::vector<BVHnode::BVHptr>(size * size);
 	};
 	//accessors

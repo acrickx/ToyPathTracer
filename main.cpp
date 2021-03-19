@@ -76,17 +76,17 @@ int main(int argc, char* argv[])
     std::cout << "done. \n";    
     std::cout << "Point Cloud composed of : " << pointCloud.surfels().size() << " surfels." << std::endl;
     //testing microbuffer
-    MicroBuffer testMB(8, Vec3f(1, 1, 1), Vec3f(-1, -1, -1));
+    MicroBuffer testMB(8, Vec3f(0, 0, 0), Vec3f(0, 1, 0));
     int i, j;
-    testMB.positionToPixel(Vec3f(1, 1, 1), i, j);
+    testMB.positionToPixel(Vec3f(0.5f, 0, 0.5f), i, j);
     std::cout << " i :" << i << ", j : " << j << std::endl;
-    testMB.positionToPixel(Vec3f(1, 0.75f, 1), i, j);
+    testMB.positionToPixel(Vec3f(-0.5f, 0, -0.5f), i, j);
     std::cout << " i :" << i << ", j : " << j << std::endl;
-    testMB.positionToPixel(Vec3f(0.5f, 0.5f, 0.5f), i, j);
+    testMB.directionToPixel(Vec3f(10, 1, 1),i,j);
     std::cout << " i :" << i << ", j : " << j << std::endl;
     //Point based Rendering
-    //PointBasedRenderer renderer;
-    //renderer.render(scene, pointCloud, sceneImage, 8);
+    PointBasedRenderer renderer;
+    renderer.render(scene, pointCloud, sceneImage, 8);
     return 0;
 }
 

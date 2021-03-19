@@ -25,8 +25,7 @@ public:
 				const Vec3i& triangleIndices = meshes[i].indices()[j];
 				const Vec3<Vec3f>& triangle = meshes[i].triangle(triangleIndices);
 				float S = (cross(triangle[1] - triangle[0], triangle[2] - triangle[0])).length() / 2.f;
-				int Nsamples = int(m_samplingRate * S);
-				std::cout << S << "   " << Nsamples << std::endl;
+				int Nsamples = int(m_samplingRate * S);				
 				for (int k = 0; k < Nsamples; k++)
 				{
 					float r1 = -0.5f + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));

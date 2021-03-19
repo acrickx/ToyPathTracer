@@ -26,13 +26,11 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 			Vec3f intersectionPos, intersectionNormal; size_t meshIndex; size_t triangleIndex;
 			intersectionFound = rayTrace(ray, scene, intersectionPos, intersectionNormal, meshIndex, triangleIndex);			
 			if (intersectionFound)
-			{
-				std::cout << "intersection" << std::endl;
+			{				
 				//microrendering
 				MicroBuffer mBuffer(microBufferSize, intersectionPos, intersectionNormal);				
 				mBuffer.fillMicroBuffer(root);
-				mBuffer.postTraversalRayCasting();
-				std::cout << mBuffer.depth(3, 3) << std::endl;
+				mBuffer.postTraversalRayCasting();				
 			}			
 		}
 	}

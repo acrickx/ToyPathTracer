@@ -133,6 +133,37 @@ BVHnode::BVHnode(const std::vector<Surfel>& surfels)
      return sphere;
  }
 
+ Vec3f BVHnode::computeColor(const Scene& scene, Material mat)
+ {
+     Vec3f color;
+     if (m_surfels.size() == 1)
+     {
+         Surfel surfel = m_surfels[0];
+         color = shade(surfel.position, surfel.normal, scene, mat);
+     }
+     else
+     {
+         color += m_left->computeColor(scene, mat) / 2.f + m_right->computeColor(scene, mat) / 2.f;
+     }
+ }
+
+ Vec3f shade(Vec3f position, Vec3f normal, const Scene& scene, Material mat)
+ {
+     std::vector<lightPtr> lights = scene.lightSources();
+     Vec3f totalColor = mat.albedo;
+     for (int i = 0; i < lights.size(); i++)
+     {
+         Ray shadowRay = Ray(position + normal * 0.001f, scene.lightSources()[i]->getPosition());
+         Vec3f shadowInterPos, shadowInterNormal; size_t shadowMeshIndex; size_t shadowTriangleIndex;
+         bool shadowIntersect = rayTrace(shadowRay, scene, shadowInterPos, shadowInterNormal, shadowMeshIndex, shadowTriangleIndex);
+         if (!shadowIntersect || (position - shadowInterPos).length() <= 0.0001f)
+         {
+             totalColor += mat.evaluateColorResponse(position, normal, lights[i], scene.camera());
+         }
+     }
+     return totalColor;
+ }
+
  //bool testTriangleIntersection(Ray ray, Vec3<Vec3f> trianglePos, Vec3f& barCoord, float& parT, float threshold = 0.0001f)
  //{
  //    Vec3f e0 = trianglePos[1] - trianglePos[0];
