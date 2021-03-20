@@ -98,7 +98,7 @@
 				for (int k = 0; k < m_postTraversalList.size(); k++)
 				{
 					BVHnode::BVHptr node = m_postTraversalList[k];
-					Vec3f intersectionPos; float parT;
+					Vec3f intersectionPos; float parT=0;
 					Surfel surfel = node->surfels()[0];
 					if (ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT))
 					{
@@ -129,6 +129,5 @@
 				}
 			}
 		}
-		std::cout << totalColorResponse << std::endl;
 		return totalColorResponse;
 	}

@@ -8,5 +8,5 @@ struct Surfel
 	Vec3f tangent;
 	Vec3f color;
 	float radius;
-	inline Surfel(Vec3f initPos, Vec3f initNorm, Vec3f initTan, Vec3f initColor, float initRad) : position(initPos), normal(initNorm), tangent(initTan), radius(initRad), color(initColor) {}
+	inline Surfel(Vec3f initPos, Vec3f initNorm, Vec3f initTan, Vec3f initColor, float initRad) : position(initPos), normal(normalize(initNorm)), tangent(normalize(initTan)), radius(initRad), color(initColor) {}
 };

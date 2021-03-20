@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
     //create scene components
     //MESHES
     //load model
-    Mesh model(Material(Vec3f(0.5f, 0.5f, 0.5f), 0.7f, 0.5f, 0.3f));
+    Mesh model(Material(Vec3f(1.f, 0.5f, 1.f), 0.7f, 0.5f, 0.3f));
     model.loadOFF("example_lowres.off");    
     //ground
     Mesh ground(Material(Vec3f(0.5f, 0.5f, 0.5f), 1.f, 1.f, 0.0f));
@@ -59,32 +59,25 @@ int main(int argc, char* argv[])
     ground.indices() = std::vector<Vec3i>{ Vec3i(0,1,2), Vec3i(0,2,3) };
     ground.normals() = std::vector<Vec3f>{ Vec3f(0,1,0), Vec3f(0,1,0), Vec3f(0,1,0), Vec3f(0,1,0) }; 
     //CAMERA
-    Camera cam(Vec3f(0, 5, 5.f), Vec3f(0, 0, 0), Vec3f(0, 1, 0), (float)width / (float)height, 90.f);
+    Camera cam(Vec3f(0, 5, 30.f), Vec3f(0, 0, 0), Vec3f(0, 1, 0), (float)width / (float)height, 90.f);
     //LIGHTS 
-    lightPtr point = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(1,1,1), 0.6f));
+    lightPtr point = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(1,1,1), 0.3f));
     lightPtr point2 = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(5,1,1), 0.4f));
     std::vector<lightPtr> lights{point};
     //CREATE SCENES  
     Scene scene(cam, std::vector<Mesh> {ground, model}, lights);
     //////////////////////////////////////////////////////////////////
-    PointCloud pointCloud(500.f);
+    PointCloud pointCloud(1000.f);
     std::cout << "computing point cloud ... \n";
     pointCloud.computePointCloud(scene);
     std::cout << "done. \n";
-    PointBasedRenderer::renderPointCloud(pointCloud,scene, sceneImage);
     std::cout << "computing BVH for point cloud ... \n";
     pointCloud.computeBVH();
     std::cout << "done. \n";    
     std::cout << "Point Cloud composed of : " << pointCloud.surfels().size() << " surfels." << std::endl;
     //Point based Rendering
-    //renderer.render(scene, pointCloud, sceneImage, 8);
-    //Ray testRay(Vec3f(0, 0, 0), Vec3f(0, 10, 0));
-    //Vec3f intersectionPos; float parT;
-    //bool test = testRay.testPlaneIntersection(Vec3f(0, 2, 0), Vec3f(0, -1, 0), intersectionPos, parT);
-    //if (test) { std::cout << "plane intersection found at : " << intersectionPos << " - distance : " << parT << std::endl; }
-    //test = testRay.testDiscIntersection(Vec3f(0, 2, 0), Vec3f(0, -1, 0), 0.5f, intersectionPos, parT);
-    //if (test) { std::cout << "disc intersection found at : " << intersectionPos << " - distance : " << parT << std::endl; }
-    //else std::cout << "no intersection found" << std::endl;
+    //PointBasedRenderer::render(scene, pointCloud, sceneImage, 8);
+    PointBasedRenderer::renderPointCloud(pointCloud,scene, sceneImage);
     sceneImage.savePPM("PointBasedGI.ppm");
     return 0;
 }

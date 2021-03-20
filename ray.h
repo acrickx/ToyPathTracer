@@ -1,4 +1,5 @@
 #pragma once
+#include"surfel.h"
 struct Ray
 {
 	Vec3f origin;
@@ -38,8 +39,8 @@ struct Ray
 	bool testPlaneIntersection(Vec3f planePos, Vec3f planeNormal, Vec3f& intersectionPos, float& parT, float threshold = 0.0001f)
 	{
 		normalize(planeNormal);
-		float denom = abs(dot(planeNormal, direction));
-		if(denom > 1e-6)
+		float denom = dot(direction, planeNormal);
+		if(abs(denom) > 1e-6)
 		{
 			parT = dot(planePos - origin, planeNormal)/denom;
 			if (parT >= 0)
@@ -54,13 +55,21 @@ struct Ray
 	bool testDiscIntersection(Vec3f discPos, Vec3f discNormal, float radius, Vec3f& intersectionPos, float& parT, float threshold = 0.0001f)
 	{
 		if (testPlaneIntersection(discPos, discNormal, intersectionPos, parT, threshold))
-		{
-			float radius2 = radius * radius;
-			if ((intersectionPos - discPos).squaredLength() <= radius2);
-			{
+		{			
+			if ((intersectionPos - discPos).length() <= radius)
+			{								
 				return true;
-			}	
+			}
+			else
+			{				
+				return false;
+			}
 		}
-		return false;
+		else return false;
+	}
+
+	bool testSurfelIntersection(Surfel surfel, Vec3f& intersectionPos, float& parT, float threshold = 0.0001f)
+	{
+		return testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT, threshold);
 	}
 };

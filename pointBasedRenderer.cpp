@@ -43,8 +43,11 @@ Image PointBasedRenderer::renderPointCloud(PointCloud pointCloud, const Scene& s
 {
 	std::vector<Surfel> surfels = pointCloud.surfels();
 	std::vector<lightPtr> lights = scene.lightSources();
+	Camera renderCam = scene.camera();
 	std::cout << surfels.size() << std::endl;
 	Material surfelMat;
+	int coloredPixel=0;
+	int blankPixel = 0;
 	//fill background of the image with arbitrary color
 	renderImage.fillBackground(Vec3f(1, 0, 1), Vec3f(0.5f, 0.5f, 1));
 	int width = renderImage.getWidth(); int height = renderImage.getHeight();
@@ -58,21 +61,36 @@ Image PointBasedRenderer::renderPointCloud(PointCloud pointCloud, const Scene& s
 		for (int i = 0; i < width; i++)
 		{
 			//create rays for intersection test
-			Ray ray(scene.camera().getPosition(), scene.camera().getImageCoordinate(float(i) / width, 1.f - (float)j / height));
-			float zbuffer = 1000000;
+			Ray ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate(float(i) / width, 1.f - (float)j / height)));
+			float zbuffer = std::numeric_limits<float>().max();
+			bool intersect = false;
 			for (int k = 0; k < surfels.size(); k++)
 			{
-				Surfel surfel = surfels[k];
+				Surfel surfel = surfels[k];				
 				Vec3f intersectionPos; float parT;
 				bool intersectionFound = false;
+				Vec3f pt1 = surfel.position - surfel.radius * surfel.tangent;
+				Vec3f pt2 = surfel.position + surfel.radius * surfel.tangent;
+				Vec3f pt3 = surfel.position + surfel.radius * normalize(cross(surfel.normal, surfel.tangent));
+				Vec3<Vec3f> triangle(pt1, pt2, pt3);
+				Vec3f barcoord;
+				//intersectionFound = ray.testTriangleIntersection(triangle, barcoord, parT);
 				intersectionFound = ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT);
-				if (intersectionFound && parT <zbuffer)
+				if (intersectionFound && parT<zbuffer)
 				{
+					if (!intersect) intersect = true;					
 					zbuffer = parT;
-					renderImage(i,j) = surfelMat.albedo + surfelMat.evaluateColorResponse(surfel.position, surfel.normal, lights[0], scene.camera());
-				}
+					surfelMat.albedo = surfel.color;
+					renderImage(i, j) = surfelMat.albedo + surfelMat.evaluateColorResponse(surfel.position, surfel.normal, lights[0], renderCam);
+				}				
 			}
+			if (!intersect)
+			{
+				blankPixel++;
+			}
+			else coloredPixel++;
 		}
 	}
+	std::cout << " coloredPixels : " << coloredPixel << " - Blank Pixels : " << blankPixel << std::endl;
 	return renderImage;
 }
