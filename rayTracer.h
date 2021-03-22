@@ -6,7 +6,7 @@
 class RayTracer
 {
 	public:		
-		Image render(Scene scene, Image& image, size_t rayPerPixel);
+		static void render(Scene scene, Image& image, size_t rayPerPixel);
 		//debug point cloud		
 		static bool rayTrace(Ray ray, Scene scene, Vec3f& intersectionPos, Vec3f& intersectionNormal, size_t& meshIndex, size_t& triangleIndex);
 		static bool rayTrace(Ray ray, const std::vector<Vec3<Vec3f>>& positions, const std::vector<Vec3<Vec3f>>& normals, Vec3f& intersectionPos, Vec3f& intersectionNormal, size_t& triangleIndex);

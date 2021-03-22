@@ -18,6 +18,7 @@ public:
     Sphere computeBoundingSphere(std::vector<Surfel> surfels);  
     inline const Vec3f position() const { return m_sphere.center(); }
     inline const Vec3f normal() const { return m_normal; }
+    inline const float normalAngle() const { return m_normalConeAngle; }
     inline const float radius() const { return m_sphere.radius(); }
     inline const BVHptr left() const { return m_left; }
     inline const BVHptr right() const { return m_right; }

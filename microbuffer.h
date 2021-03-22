@@ -46,6 +46,7 @@ public:
 private:
 	size_t m_width = 0;
 	size_t m_height = 0;
+	int m_depth = 0;
 	Vec3f m_gatheringPos;
 	Vec3f m_gatheringNormal;
 	Vec3f m_horizontal;
@@ -56,3 +57,4 @@ private:
 	std::vector<BVHnode::BVHptr> m_indexBuffer;
 	std::vector<BVHnode::BVHptr> m_postTraversalList;
 };
+

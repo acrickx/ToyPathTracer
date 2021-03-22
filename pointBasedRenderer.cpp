@@ -8,7 +8,7 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 	Camera renderCam = scene.camera();
 	BVHnode::BVHptr root = pointCloud.BVHroot();
 	//fill background of the image with arbitrary color
-	renderImage.fillBackground(Vec3f(1, 0, 1), Vec3f(0.5f, 0.5f, 1));
+	renderImage.fillBackground(Vec3f(0.5, 0.5, 0.5), Vec3f(0.1f, 0.1f, 0.1f));
 	int width = renderImage.getWidth(); int height = renderImage.getHeight();
 	for (int j = 0; j < height; j++)
 	{
@@ -49,7 +49,7 @@ Image PointBasedRenderer::renderPointCloud(PointCloud pointCloud, const Scene& s
 	int coloredPixel=0;
 	int blankPixel = 0;
 	//fill background of the image with arbitrary color
-	renderImage.fillBackground(Vec3f(1, 0, 1), Vec3f(0.5f, 0.5f, 1));
+	renderImage.fillBackground(Vec3f(0.5, 0.5, 0.5), Vec3f(0.1f, 0.1f, 0.1f));
 	int width = renderImage.getWidth(); int height = renderImage.getHeight();
 	for (int j = 0; j < height; j++)
 	{
@@ -61,7 +61,7 @@ Image PointBasedRenderer::renderPointCloud(PointCloud pointCloud, const Scene& s
 		for (int i = 0; i < width; i++)
 		{
 			//create rays for intersection test
-			Ray ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate(float(i) / width, 1.f - (float)j / height)));
+			Ray ray(renderCam.getPosition(), renderCam.getImageCoordinate(i/(float)width, 1.f - j/(float)height));
 			float zbuffer = std::numeric_limits<float>().max();
 			bool intersect = false;
 			for (int k = 0; k < surfels.size(); k++)
@@ -69,19 +69,17 @@ Image PointBasedRenderer::renderPointCloud(PointCloud pointCloud, const Scene& s
 				Surfel surfel = surfels[k];				
 				Vec3f intersectionPos; float parT;
 				bool intersectionFound = false;
-				Vec3f pt1 = surfel.position - surfel.radius * surfel.tangent;
-				Vec3f pt2 = surfel.position + surfel.radius * surfel.tangent;
-				Vec3f pt3 = surfel.position + surfel.radius * normalize(cross(surfel.normal, surfel.tangent));
-				Vec3<Vec3f> triangle(pt1, pt2, pt3);
-				Vec3f barcoord;
-				//intersectionFound = ray.testTriangleIntersection(triangle, barcoord, parT);
 				intersectionFound = ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT);
 				if (intersectionFound && parT<zbuffer)
 				{
 					if (!intersect) intersect = true;					
 					zbuffer = parT;
 					surfelMat.albedo = surfel.color;
-					renderImage(i, j) = surfelMat.albedo + surfelMat.evaluateColorResponse(surfel.position, surfel.normal, lights[0], renderCam);
+					renderImage(i, j) = surfelMat.albedo;
+					for (int l = 0; l < lights.size(); l++)
+					{
+						renderImage(i, j) += surfelMat.evaluateColorResponse(surfel.position, surfel.normal, lights[l], renderCam);
+					}
 				}				
 			}
 			if (!intersect)

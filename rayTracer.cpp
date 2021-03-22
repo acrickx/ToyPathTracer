@@ -2,12 +2,12 @@
 
 
 //called to render image from scene
-Image RayTracer::render(Scene scene, Image& renderImage, size_t rayPerPixel = 8)
+void RayTracer::render(Scene scene, Image& renderImage, size_t rayPerPixel = 8)
 {
 	std::vector<Mesh> sceneMeshes = scene.meshes();
 	Camera renderCam = scene.camera();
 	//fill background of the image with arbitrary color
-	renderImage.fillBackground(Vec3f(1, 0, 1), Vec3f(0.5f, 0.5f, 1));
+	renderImage.fillBackground(Vec3f(0.5, 0.5, 0.5), Vec3f(0.1f, 0.1f, 0.1f));
 	int width = renderImage.getWidth(); int height = renderImage.getHeight();
 	for (int j = 0; j < height; j++)
 	{
@@ -28,15 +28,14 @@ Image RayTracer::render(Scene scene, Image& renderImage, size_t rayPerPixel = 8)
 				Vec3f intersectionPos, intersectionNormal; size_t meshIndex; size_t triangleIndex;
 				intersectionFound = rayTrace(scatteredRay, scene, intersectionPos, intersectionNormal, meshIndex, triangleIndex);
 				if (intersectionFound)
-				{					
+				{
 					if (!intersection) intersection = true;
 					totalColorResponse += shade(intersectionPos, intersectionNormal, sceneMeshes[meshIndex].material(), scene) / (float)rayPerPixel;
 				}
 			}
-			if(intersection) renderImage(i, j) = totalColorResponse;
+			if (intersection) renderImage(i, j) = totalColorResponse;
 		}
 	}
-	return renderImage;
 }
 
 //actually raytrace the scene with a given ray

@@ -56,7 +56,7 @@ struct Ray
 	{
 		if (testPlaneIntersection(discPos, discNormal, intersectionPos, parT, threshold))
 		{			
-			if ((intersectionPos - discPos).length() <= radius)
+			if ((intersectionPos - discPos).squaredLength() <= radius*radius)
 			{								
 				return true;
 			}

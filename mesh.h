@@ -20,10 +20,19 @@ public:
 	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, lightPtr light, Camera eye) const {
 		float diffuseResponse(diffuse / (float)M_PI);
 		Vec3f wi = normalize(light->getPosition() - position);
-		Vec3f w0 = normalize(eye.getPosition() - position);
-		Vec3f wh = normalize(wi + w0);
-		Vec3f specularResponse = reflectance(wi, w0, normal);
-		Vec3f colorResponse = light->colorResponse() * (Vec3f(diffuseResponse) + specularResponse) * std::max(dot(normal, wi), 0.f);
+		//Vec3f w0 = normalize(eye.getPosition() - position);
+		//Vec3f wh = normalize(wi + w0);
+		//Vec3f specularResponse = reflectance(wi, w0, normal);
+		Vec3f colorResponse = light->colorResponse() * (Vec3f(diffuseResponse)) * std::max(dot(normal, wi), 0.f);
+		return colorResponse;
+	};
+	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, Vec3f direction) const {
+		float diffuseResponse(diffuse / (float)M_PI);
+		Vec3f wi = direction;
+		//Vec3f w0 = normalize(eye.getPosition() - position);
+		//Vec3f wh = normalize(wi + w0);
+		//Vec3f specularResponse = reflectance(wi, w0, normal);
+		Vec3f colorResponse = (Vec3f(diffuseResponse)) * std::max(dot(normal, wi), 0.f);
 		return colorResponse;
 	};
 private:
@@ -57,7 +66,7 @@ private:
 
 class Mesh
 {
-	private:
+	protected:
 		std::vector<Vec3f> m_vertices;
 		std::vector<Vec3i> m_indices;
 		std::vector<Vec3f> m_normals;
@@ -69,7 +78,10 @@ class Mesh
 	public:	
 		Mesh() {}
 		Mesh(Material _material) : m_mat(_material) {};
+		//loading model
 		void loadOFF(std::string filepath);
+		void scale(float scale) { for (int i = 0; i < m_vertices.size(); i++) { m_vertices[i] *= scale; } }
+		//normal computations
 		void computeNormals();
 		inline const Vec3f interpPos(Vec3f barCoord, Vec3i triangleIndices) const { return (barCoord[2] * m_vertices[triangleIndices[0]] + barCoord[0] * m_vertices[triangleIndices[1]] + barCoord[1] * m_vertices[triangleIndices[2]]); } 
 		inline const Vec3f interpNorm(Vec3f barCoord, Vec3i triangleIndices) const { return normalize(barCoord[2] * m_normals[triangleIndices[0]] + barCoord[0] * m_normals[triangleIndices[1]] + barCoord[1] * m_normals[triangleIndices[2]]); } 
@@ -86,8 +98,37 @@ class Mesh
 		inline const Vec3<Vec3f> triangle(Vec3i triangleIndices) const { return Vec3<Vec3f>(m_vertices[triangleIndices[0]], m_vertices[triangleIndices[1]], m_vertices[triangleIndices[2]]); }
 		inline const std::vector<Vec3f>& normals() const { return m_normals; }
 		inline const AABB& boundingBox() const { return m_boundingBox; }
-		inline const Material material() const { return m_mat; }
+		inline const Material material() const { return m_mat; }	
+		//Cornell Box initializer		
 };
+
+
+//Primitives
+static Mesh Plane(Vec3f center, Vec3f n, Vec3f u, float sideLength, Material mat)
+{
+	Mesh plane(mat);
+	n.normalize();
+	u.normalize();
+	Vec3f v = normalize(cross(n, u));
+	plane.vertices() = std::vector<Vec3f>{ center - (u + v) * sideLength / 2.f, center + (v - u) * sideLength / 2.f, center + (u + v) * sideLength / 2.f, center + (u - v) * sideLength / 2.f };
+	plane.indices() = std::vector<Vec3i>{ Vec3i(2,1,0), Vec3i(2,0,3) };
+	plane.normals() = std::vector<Vec3f>{ n, n, n, n };	
+	return plane;
+}
+
+static std::vector<Mesh> CornellBox(Vec3f origin, float scale)
+{
+	{
+		Mesh Left = Plane(origin - scale * Vec3f(1, 0, 0), Vec3f(1, 0, 0), Vec3f(0, 0, -1), scale, Material(Vec3f(1, 0, 0), 1.f, 1.f, 0));
+		Mesh Right = Plane(origin + scale * Vec3f(1, 0, 0), Vec3f(-1, 0, 0), Vec3f(0, 0, 1), scale, Material(Vec3f(0, 1, 0), 1.f, 1.f, 0));
+		Mesh Top = Plane(origin + scale * Vec3f(0, 1, 0), Vec3f(0, -1, 0), Vec3f(1, 0, 0), scale, Material(Vec3f(1, 1, 1), 1.f, 1.f, 0));
+		Mesh Bottom = Plane(origin - scale * Vec3f(0, 1, 0), Vec3f(0, 1, 0), Vec3f(1, 0, 0), scale, Material(Vec3f(1, 1, 1), 1.f, 1.f, 0));
+		Mesh Back = Plane(origin - scale * Vec3f(0, 0, 1), Vec3f(0, 0, 1), Vec3f(1, 0, 0), scale, Material(Vec3f(1, 1, 1), 1.f, 1.f, 0));
+		return std::vector<Mesh> {Back, Left, Right, Top, Bottom };
+	}
+}
+
+
 
 
 
