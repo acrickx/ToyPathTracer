@@ -64,23 +64,26 @@
 	void MicroBuffer::fillMicroBuffer(BVHnode::BVHptr node)
 	{			
 		//compute distance and solid angle
-		Vec3f direction = (node->position() - m_gatheringPos);		
+		Vec3f direction = (node->position() - m_gatheringPos);
 		float distance = direction.length();
+		direction.normalize();
+		if (dot(direction, m_gatheringNormal) < 0) { return; }
 		bool hasChildren = (node->surfels().size() > 1);
-		float BVHsolidAngle = 0;		
+		float BVHsolidAngle = 0;
 		if (hasChildren) BVHsolidAngle = M_PI * (node->radius() * node->radius()) / (distance * distance);
-		else if(node->surfels().size() ==1 ) BVHsolidAngle = M_PI * (node->surfels()[0].radius * node->surfels()[0].radius) / (distance * distance);
+		else if (node->surfels().size() == 1) BVHsolidAngle = M_PI * (node->surfels()[0].radius * node->surfels()[0].radius) / (distance * distance);
 		int indexI, indexJ;
 		directionToPixel(direction, indexI, indexJ);
-		//std::cout << "Pixel solid angle : " << solidAngle(indexI, indexJ) << std::endl;
-		if (BVHsolidAngle < 0.005f) //rasterize node directly
-		{			
-			if (depth(indexI, indexJ) > distance)
-			{				
+		//std::cout << "Pixel solid angle : " << solidAngle(indexI, indexJ)  << " | BVHSolidAngle : " << BVHsolidAngle << std::endl;
+		bool nodeFacesBuffer = (0.5f * M_PI - std::acos((dot(m_gatheringNormal, node->normal())))) < node->normalAngle();
+		if (BVHsolidAngle < solidAngle(indexI, indexJ) && nodeFacesBuffer) //rasterize node directly
+		{
+			if (depth(indexI, indexJ) > distance && nodeFacesBuffer)
+			{
 				setDepthValue(indexI, indexJ, distance);
 				setIndex(indexI, indexJ, node);
 				setColorValue(indexI, indexJ, node->getColor());				
-			}			
+			}
 		}
 		else
 		{
@@ -94,27 +97,28 @@
 			{
 				m_postTraversalList.push_back(node);
 			}
-		}				
+		}
 	}
 
-	//BVH traversal
+	//BVH traversal //DEBUG MODE
 	void MicroBuffer::fillMicroBuffer(BVHnode::BVHptr node, std::vector<Surfel>& surfels)
 	{		
 		//compute distance and solid angle
 		Vec3f direction = (node->position() - m_gatheringPos);		
 		float distance = direction.length();
 		direction.normalize();
-		if (dot(direction, m_gatheringNormal) < 0) { return; }
+		if (dot(direction, m_gatheringNormal) < 0) { return; }		
 		bool hasChildren = (node->surfels().size() > 1);
 		float BVHsolidAngle = 0;
-		if (hasChildren) BVHsolidAngle = M_PI * (node->radius() * node->radius()) * dot(direction, m_gatheringNormal) / (distance * distance);
-		else if (node->surfels().size() == 1) BVHsolidAngle = M_PI * (node->surfels()[0].radius * node->surfels()[0].radius) * dot(direction, m_gatheringNormal) / (distance * distance);
+		if (hasChildren) BVHsolidAngle = M_PI * (node->radius() * node->radius()) / (distance * distance);		
+		else if (node->surfels().size() == 1) BVHsolidAngle = M_PI * (node->surfels()[0].radius * node->surfels()[0].radius)/(distance * distance);
 		int indexI, indexJ;
 		directionToPixel(direction, indexI, indexJ);
-		std::cout << "Pixel solid angle : " << solidAngle(indexI, indexJ)  << " | BVHSolidAngle : " << BVHsolidAngle << std::endl;
-		if (BVHsolidAngle < solidAngle(indexI,indexJ)) //rasterize node directly
+		//std::cout << "Pixel solid angle : " << solidAngle(indexI, indexJ)  << " | BVHSolidAngle : " << BVHsolidAngle << std::endl;
+		bool nodeFacesBuffer = (0.5f * M_PI - std::acos((dot(m_gatheringNormal, node->normal())))) < node->normalAngle();
+		if (BVHsolidAngle < solidAngle(indexI,indexJ) && nodeFacesBuffer) //rasterize node directly
 		{
-			if (depth(indexI, indexJ) > distance)
+			if (depth(indexI, indexJ) > distance && nodeFacesBuffer)
 			{
 				setDepthValue(indexI, indexJ, distance);
 				setIndex(indexI, indexJ, node);
@@ -139,24 +143,52 @@
 
 	//ray cast leave node for precise rasterization
 	void MicroBuffer::postTraversalRayCasting()
+	{
+		for (int j = 0; j < m_height; j++)
+		{
+			for (int i = 0; i < m_width; i++)
+			{
+				Ray ray(m_gatheringPos, pixelToDirection(i, j));
+				for (int k = 0; k < m_postTraversalList.size(); k++)
+				{
+					BVHnode::BVHptr node = m_postTraversalList[k];
+					Vec3f intersectionPos; float parT = 0;
+					Surfel surfel = node->surfels()[0];
+					if (ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT))
+					{
+						if (parT < depth(i, j))
+						{
+							setDepthValue(i, j, parT);
+							setIndex(i, j, m_postTraversalList[k]);
+							setColorValue(i, j, surfel.color);							
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//ray cast leave node for precise rasterization // DEBUG MODE
+	void MicroBuffer::postTraversalRayCasting(std::vector<Surfel>& surfels)
 	{				
 		for (int j = 0; j < m_height; j++)
 		{
 			for (int i = 0; i < m_width; i++)
 			{
-				Ray ray(m_gatheringPos, pixelToDirection(i, j));					
+				Ray ray(m_gatheringPos, pixelToDirection(i, j));
 				for (int k = 0; k < m_postTraversalList.size(); k++)
 				{
 					BVHnode::BVHptr node = m_postTraversalList[k];
-					Vec3f intersectionPos; float parT=0;
+					Vec3f intersectionPos; float parT = 0;
 					Surfel surfel = node->surfels()[0];
 					if (ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT))
 					{
 						if (parT < depth(i, j))
-						{							
+						{	
 							setDepthValue(i, j, parT);
 							setIndex(i, j, m_postTraversalList[k]);
-							setColorValue(i, j, surfel.color);
+							setColorValue(i, j, surfel.color);							
+							surfels[j * m_width + i] = surfel;
 						}
 					}
 				}
@@ -166,19 +198,16 @@
 
 	//convolve microbuffer with BRDF
 	Vec3f MicroBuffer::convolveBRDF(Material mat, const Scene& scene)
-	{
-		std::vector<lightPtr> lights = scene.lightSources();
-		Vec3f totalColorResponse;
+	{			
+		Vec3f totalColorResponse = mat.albedo;
 		for (int i = 0; i < m_width; i++)
 		{
 			for (int j = 0; j < m_height; j++)
 			{
 				float solidAgl = solidAngle(i, j);			
 				Vec3f direction = pixelToDirection(i, j);
-				for (int k = 0; k < lights.size(); k++)
-				{
-					totalColorResponse += color(i, j) * mat.evaluateColorResponse(m_gatheringPos, m_gatheringNormal, direction)*dot(m_gatheringNormal,direction)/10.f;
-				}
+				totalColorResponse += color(i, j) * (mat.diffuse/(float)M_PI)*std::abs(dot(m_gatheringNormal,direction))/15.f;
+				//totalColorResponse += color(i, j) * mat.evaluateColorResponse(m_gatheringPos, m_gatheringNormal, direction)*dot(m_gatheringNormal,direction)/10.f;
 			}
 		}
 		return totalColorResponse;

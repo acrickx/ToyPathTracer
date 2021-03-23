@@ -42,8 +42,8 @@ public:
 	void fillMicroBuffer(BVHnode::BVHptr node);
 	void fillMicroBuffer(BVHnode::BVHptr node, std::vector<Surfel>& surfels);
 	void postTraversalRayCasting();
+	void postTraversalRayCasting(std::vector<Surfel>& surfels);
 	Vec3f convolveBRDF(Material mat, const Scene& scene);
-
 
 private:
 	size_t m_width = 0;

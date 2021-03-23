@@ -28,7 +28,7 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 			if (intersectionFound)
 			{				
 				//microrendering
-				MicroBuffer mBuffer(microBufferSize, intersectionPos, intersectionNormal);				
+				MicroBuffer mBuffer(microBufferSize, intersectionPos+0.01f*intersectionNormal, intersectionNormal);				
 				mBuffer.fillMicroBuffer(root);
 				mBuffer.postTraversalRayCasting();
 				renderImage(i,j) = mBuffer.convolveBRDF(scene.meshes()[meshIndex].material(), scene);

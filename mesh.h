@@ -20,8 +20,7 @@ public:
 	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, lightPtr light, Camera eye) const {
 		float diffuseResponse(diffuse / (float)M_PI);
 		Vec3f wi = normalize(light->getPosition() - position);
-		//Vec3f w0 = normalize(eye.getPosition() - position);
-		//Vec3f wh = normalize(wi + w0);
+		//Vec3f w0 = normalize(eye.getPosition() - position);		
 		//Vec3f specularResponse = reflectance(wi, w0, normal);
 		Vec3f colorResponse = light->colorResponse() * (Vec3f(diffuseResponse)) * std::max(dot(normal, wi), 0.f);
 		return colorResponse;
@@ -29,8 +28,7 @@ public:
 	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, Vec3f direction) const {
 		float diffuseResponse(diffuse / (float)M_PI);
 		Vec3f wi = direction;
-		//Vec3f w0 = normalize(eye.getPosition() - position);
-		//Vec3f wh = normalize(wi + w0);
+		//Vec3f w0 = normalize(eye.getPosition() - position);		
 		//Vec3f specularResponse = reflectance(wi, w0, normal);
 		Vec3f colorResponse = (Vec3f(diffuseResponse)) * std::max(dot(normal, wi), 0.f);
 		return colorResponse;
