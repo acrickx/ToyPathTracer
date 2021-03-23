@@ -43,8 +43,7 @@ Image PointBasedRenderer::renderPointCloud(PointCloud pointCloud, const Scene& s
 {
 	std::vector<Surfel> surfels = pointCloud.surfels();
 	std::vector<lightPtr> lights = scene.lightSources();
-	Camera renderCam = scene.camera();
-	std::cout << surfels.size() << std::endl;
+	Camera renderCam = scene.camera();	
 	Material surfelMat;
 	int coloredPixel=0;
 	int blankPixel = 0;
@@ -65,10 +64,10 @@ Image PointBasedRenderer::renderPointCloud(PointCloud pointCloud, const Scene& s
 			float zbuffer = std::numeric_limits<float>().max();
 			bool intersect = false;
 			for (int k = 0; k < surfels.size(); k++)
-			{
+			{				
 				Surfel surfel = surfels[k];				
 				Vec3f intersectionPos; float parT;
-				bool intersectionFound = false;
+				bool intersectionFound = false;				
 				intersectionFound = ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT);
 				if (intersectionFound && parT<zbuffer)
 				{

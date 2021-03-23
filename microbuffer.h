@@ -13,7 +13,8 @@ public:
 	{
 		m_gatheringPos = gatheringPos;
 		m_gatheringNormal = normalize(gatheringNormal);
-		if (m_gatheringNormal == Vec3f(0, 1, 0)) { m_horizontal = normalize(cross(Vec3f(0, 0, -1),m_gatheringNormal)); }
+		if (m_gatheringNormal == Vec3f(0, 1, 0)) { m_horizontal = Vec3f(1,0,0); }
+		else if (m_gatheringNormal == Vec3f(0, -1, 0)) { m_horizontal = Vec3f(-1,0,0); }
 		else m_horizontal = normalize(cross(Vec3f(0, 1, 0), m_gatheringNormal));
 		m_vertical = normalize(cross(m_gatheringNormal, m_horizontal));
 		m_bottomLeftCorner = m_gatheringPos - (m_horizontal + m_vertical);
@@ -39,6 +40,7 @@ public:
 	float solidAngle(size_t i, size_t j);
 	//rendering
 	void fillMicroBuffer(BVHnode::BVHptr node);
+	void fillMicroBuffer(BVHnode::BVHptr node, std::vector<Surfel>& surfels);
 	void postTraversalRayCasting();
 	Vec3f convolveBRDF(Material mat, const Scene& scene);
 

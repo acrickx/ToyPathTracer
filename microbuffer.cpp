@@ -49,39 +49,37 @@
 
 	float MicroBuffer::solidAngle(size_t i, size_t j)
 	{
-		//if (i < 1) i++;
-		//if (i > m_width-1) i--;
-		//if (j < 1) j++;
-		//if (j > m_height-1) j--;
-		//Vec3f dx = (pixelToDirection(i + 1, j) - pixelToDirection(i - 1, j)) / 2.f;
-		//Vec3f dy = (pixelToDirection(i, j+1) - pixelToDirection(i, j-1)) / 2.f;
-		//float solidAngle = dx.length() * dy.length();
-		//return solidAngle;
-		return(dot(pixelToDirection(i, j), m_gatheringNormal));
+		if (i < 1) i++;
+		if (i > m_width-1) i--;
+		if (j < 1) j++;
+		if (j > m_height-1) j--;
+		Vec3f dx = (pixelToDirection(i + 1, j) - pixelToDirection(i - 1, j)) / 2.f;
+		Vec3f dy = (pixelToDirection(i, j+1) - pixelToDirection(i, j-1)) / 2.f;
+		float solidAngle = dx.length() * dy.length();
+		return solidAngle;
+		//return(dot(pixelToDirection(i, j), m_gatheringNormal));
 	}
 
 	//BVH traversal
 	void MicroBuffer::fillMicroBuffer(BVHnode::BVHptr node)
 	{			
 		//compute distance and solid angle
-		Vec3f direction = (node->position() - m_gatheringPos);
+		Vec3f direction = (node->position() - m_gatheringPos);		
 		float distance = direction.length();
 		bool hasChildren = (node->surfels().size() > 1);
-		float BVHsolidAngle = 0;
-		//if (hasChildren) BVHsolidAngle = M_PI * sin(node->normalAngle())*sin(node->normalAngle());
+		float BVHsolidAngle = 0;		
 		if (hasChildren) BVHsolidAngle = M_PI * (node->radius() * node->radius()) / (distance * distance);
 		else if(node->surfels().size() ==1 ) BVHsolidAngle = M_PI * (node->surfels()[0].radius * node->surfels()[0].radius) / (distance * distance);
 		int indexI, indexJ;
 		directionToPixel(direction, indexI, indexJ);
 		//std::cout << "Pixel solid angle : " << solidAngle(indexI, indexJ) << std::endl;
-		if (BVHsolidAngle < solidAngle(indexI,indexJ)) //rasterize node directly
+		if (BVHsolidAngle < 0.005f) //rasterize node directly
 		{			
 			if (depth(indexI, indexJ) > distance)
-			{
-				std::cout << "rasterized : " << indexI << " - " << indexJ << std::endl;
+			{				
 				setDepthValue(indexI, indexJ, distance);
 				setIndex(indexI, indexJ, node);
-				setColorValue(indexI, indexJ, node->getColor());
+				setColorValue(indexI, indexJ, node->getColor());				
 			}			
 		}
 		else
@@ -99,10 +97,49 @@
 		}				
 	}
 
+	//BVH traversal
+	void MicroBuffer::fillMicroBuffer(BVHnode::BVHptr node, std::vector<Surfel>& surfels)
+	{		
+		//compute distance and solid angle
+		Vec3f direction = (node->position() - m_gatheringPos);		
+		float distance = direction.length();
+		direction.normalize();
+		if (dot(direction, m_gatheringNormal) < 0) { return; }
+		bool hasChildren = (node->surfels().size() > 1);
+		float BVHsolidAngle = 0;
+		if (hasChildren) BVHsolidAngle = M_PI * (node->radius() * node->radius()) * dot(direction, m_gatheringNormal) / (distance * distance);
+		else if (node->surfels().size() == 1) BVHsolidAngle = M_PI * (node->surfels()[0].radius * node->surfels()[0].radius) * dot(direction, m_gatheringNormal) / (distance * distance);
+		int indexI, indexJ;
+		directionToPixel(direction, indexI, indexJ);
+		std::cout << "Pixel solid angle : " << solidAngle(indexI, indexJ)  << " | BVHSolidAngle : " << BVHsolidAngle << std::endl;
+		if (BVHsolidAngle < solidAngle(indexI,indexJ)) //rasterize node directly
+		{
+			if (depth(indexI, indexJ) > distance)
+			{
+				setDepthValue(indexI, indexJ, distance);
+				setIndex(indexI, indexJ, node);
+				setColorValue(indexI, indexJ, node->getColor());				
+				surfels[indexJ * m_width + indexI] = Surfel(node->position(), node->normal(), node->getColor(), node->radius());				
+			}
+		}
+		else
+		{
+			if (hasChildren)
+			{
+				m_depth++;
+				fillMicroBuffer(node->left(), surfels);
+				fillMicroBuffer(node->right(), surfels);
+			}
+			else //update post traversal list with too big leaf nodes for rasterization
+			{
+				m_postTraversalList.push_back(node);
+			}
+		}
+	}
+
 	//ray cast leave node for precise rasterization
 	void MicroBuffer::postTraversalRayCasting()
-	{		
-		std::cout << m_postTraversalList.size() << std::endl;
+	{				
 		for (int j = 0; j < m_height; j++)
 		{
 			for (int i = 0; i < m_width; i++)
@@ -116,8 +153,7 @@
 					if (ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT))
 					{
 						if (parT < depth(i, j))
-						{
-							std::cout << "raytraced : " << i << " - " << j << std::endl;
+						{							
 							setDepthValue(i, j, parT);
 							setIndex(i, j, m_postTraversalList[k]);
 							setColorValue(i, j, surfel.color);
