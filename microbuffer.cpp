@@ -107,7 +107,7 @@
 		Vec3f direction = (node->position() - m_gatheringPos);		
 		float distance = direction.length();
 		direction.normalize();
-		if (dot(direction, m_gatheringNormal) < 0) { return; }		
+		//if (dot(direction, m_gatheringNormal) < 0) { return; }		
 		bool hasChildren = (node->surfels().size() > 1);
 		float BVHsolidAngle = 0;
 		if (hasChildren) BVHsolidAngle = M_PI * (node->radius() * node->radius()) / (distance * distance);		

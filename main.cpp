@@ -54,7 +54,7 @@ void debugMicrobuffer(Vec3f position, Vec3f normal, const Scene& scene, BVHnode:
 int main(int argc, char* argv[])
 {
     float aspectRatio = 1.f;
-    size_t width=400, height= width/aspectRatio;
+    size_t width=50, height= width/aspectRatio;
     string filename="backgroundImage.ppm";
     //"Usage : ./MyRayTracer –width <width> -height <height> -output <filename.ppm>" << std::endl;
     if (argc >1)
@@ -88,13 +88,13 @@ int main(int argc, char* argv[])
     Mesh model(Material(Vec3f(0.4f, 0.4f, 0.7f), 1.0f, 1.0f, 0.f));    
     model.loadOFF("example_lowres.off");        
     model.scale(0.5f);
-    Mesh cubePlane = Plane(Vec3f(0, -0.3f, 0), Vec3f(0, 1, 0), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    Mesh cubeTopPlane = Plane(Vec3f(0, -0.1f, 0), Vec3f(0, -1, 0), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    Mesh cubeBackPlane = Plane(Vec3f(0, -0.2f, -0.1f), Vec3f(0, 0, 1), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    Mesh cubeFrontPlane = Plane(Vec3f(0, -0.2f, 0.1f), Vec3f(0, 0, 1), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    Mesh cubeLeftPlane = Plane(Vec3f(-0.1f, -0.2f, 0.f), Vec3f(1, 0, 0), Vec3f(0, 0, -1), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    Mesh cubeRightPlane = Plane(Vec3f(0.1f, -0.2f, 0.f), Vec3f(-1, 0, 0), Vec3f(0, 0, 1), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    
+    //Mesh cubePlane = Plane(Vec3f(0, -0.3f, 0), Vec3f(0, 1, 0), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
+    //Mesh cubeTopPlane = Plane(Vec3f(0, -0.1f, 0), Vec3f(0, -1, 0), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
+    //Mesh cubeBackPlane = Plane(Vec3f(0, -0.2f, -0.1f), Vec3f(0, 0, 1), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
+    //Mesh cubeFrontPlane = Plane(Vec3f(0, -0.2f, 0.1f), Vec3f(0, 0, 1), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
+    //Mesh cubeLeftPlane = Plane(Vec3f(-0.1f, -0.2f, 0.f), Vec3f(1, 0, 0), Vec3f(0, 0, -1), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
+    //Mesh cubeRightPlane = Plane(Vec3f(0.1f, -0.2f, 0.f), Vec3f(-1, 0, 0), Vec3f(0, 0, 1), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
+    //
     //CAMERA
     Camera cam(Vec3f(0, 0.0f, 0.75f), Vec3f(0, 0, 0.f), Vec3f(0, 1, 0), 45.f);
     //LIGHTS 
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
     lightPtr point2 = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(-0.2f,0.f,1.f), 0.35f));
     std::vector<lightPtr> lights{point, point2};
     //CREATE SCENES 
-    Scene scene(cam, std::vector<Mesh> {backPlane, leftPlane, rightPlane, topPlane, plane, model}, lights);
+    Scene scene(cam, std::vector<Mesh> {backPlane, leftPlane, rightPlane, topPlane, plane}, lights);
     //DEBUG
     PointCloud pointCloud(10000.f);
     std::cout << "computing point cloud ... \n";
@@ -121,14 +121,12 @@ int main(int argc, char* argv[])
     //debugMicrobuffer(Vec3f(-0.2499f, 0.f, 0), Vec3f(1, 0, 0), scene, pointCloud.BVHroot(), "mb_left.ppm", surfels);
     //PointCloud debugPointCloudLeft(surfels);
     //PointBasedRenderer::renderPointCloud(debugPointCloudLeft,scene, image);
-    //image.savePPM("PCDebugLeftWall.ppm");
-    //image.savePPM("PCDebugLeft8.ppm");
-    //debugMicrobuffer(Vec3f(0.0f, 0.23f, 0), Vec3f(0, -1, 0), scene, pointCloud.BVHroot(), "mb_top.ppm", surfels);
+    //image.savePPM("PCDebugLef.ppm");    
+    //debugMicrobuffer(Vec3f(0.0f, 0, -0.23f), Vec3f(0, 0, 1), scene, pointCloud.BVHroot(), "mb_back.ppm", surfels);    
     //PointCloud debugPointCloudTop(surfels);
     //PointBasedRenderer::renderPointCloud(debugPointCloudTop, scene, image);
-    //image.savePPM("PCDebugTop8.ppm");
+    //image.savePPM("PCDebugBack.ppm");
     //debugMicrobuffer(Vec3f(0.0f, -0.23f, 0), Vec3f(0, 1, 0), scene, pointCloud.BVHroot(), "mb_bot.ppm", surfels);
-    //debugMicrobuffer(Vec3f(0.0f, 0, -0.23f), Vec3f(0, 0, 1), scene, pointCloud.BVHroot(), "mb_back.ppm", surfels);
     //std::cout << "model 27 :" << model.normals()[27] << std::endl;
     //debugMicrobuffer(model.vertices()[27], model.normals()[27], scene, pointCloud.BVHroot(), "mb_corner.ppm", surfels);
     //PointCloud debugPointCloudCorner(surfels);
