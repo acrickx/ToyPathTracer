@@ -15,7 +15,7 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 		//display progress with dots
 		size_t progress = 0;
 		if (progress % 10 == 0) std::cout << ".";
-		progress++;
+		progress++;		
 		#pragma omp parallel for
 		for (int i = 0; i < width; i++)
 		{
@@ -28,7 +28,7 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 			if (intersectionFound)
 			{				
 				//microrendering
-				MicroBuffer mBuffer(microBufferSize, intersectionPos+0.01f*intersectionNormal, intersectionNormal);				
+				MicroBuffer mBuffer(microBufferSize, intersectionPos+0.01f*intersectionNormal, intersectionNormal);							
 				mBuffer.fillMicroBuffer(root);
 				mBuffer.postTraversalRayCasting();
 				renderImage(i,j) = mBuffer.convolveBRDF(scene.meshes()[meshIndex].material(), scene);
@@ -63,6 +63,7 @@ Image PointBasedRenderer::renderPointCloud(PointCloud pointCloud, const Scene& s
 			Ray ray(renderCam.getPosition(), renderCam.getImageCoordinate(i/(float)width, 1.f - j/(float)height));
 			float zbuffer = std::numeric_limits<float>().max();
 			bool intersect = false;
+			#pragma omp parallel for
 			for (int k = 0; k < surfels.size(); k++)
 			{				
 				Surfel surfel = surfels[k];				

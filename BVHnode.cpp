@@ -13,11 +13,15 @@ BVHnode::BVHnode(const std::vector<Surfel>& surfels)
     {
         m_surfels = surfels;
         m_sphere = sphere;
+        m_radius = surfels[0].radius;
+        m_hasChildren = false;
     }
     else
     {
         m_surfels = surfels;
         m_sphere = sphere;
+        m_radius = sphere.radius();
+        m_hasChildren = true;
         //determine in which dimension to split 
         AABB aabb{};
         for (int i = 0; i < surfels.size(); i++)
@@ -86,8 +90,7 @@ BVHnode::BVHnode(const std::vector<Surfel>& surfels)
          if (surfels[i].normal != m_normal)
          {
              float angle = acos((dot(surfels[i].normal, m_normal)));
-             if (abs(angle) > abs(m_normalConeAngle)) m_normalConeAngle = angle;
-             if (angle == 0) std::cout << "angle = 0 : " << surfels[i].normal << " | " << m_normal << std::endl;
+             if (abs(angle) > abs(m_normalConeAngle)) m_normalConeAngle = angle;             
          }
          //test center to find extreme points in each direction & filling the two subsets
          Vec3f center = surfels[i].position;

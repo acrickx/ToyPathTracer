@@ -54,7 +54,7 @@ void debugMicrobuffer(Vec3f position, Vec3f normal, const Scene& scene, BVHnode:
 int main(int argc, char* argv[])
 {
     float aspectRatio = 1.f;
-    size_t width=50, height= width/aspectRatio;
+    size_t width=600, height= width/aspectRatio;
     string filename="backgroundImage.ppm";
     //"Usage : ./MyRayTracer –width <width> -height <height> -output <filename.ppm>" << std::endl;
     if (argc >1)
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
     lightPtr point2 = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(-0.2f,0.f,1.f), 0.35f));
     std::vector<lightPtr> lights{point, point2};
     //CREATE SCENES 
-    Scene scene(cam, std::vector<Mesh> {backPlane, leftPlane, rightPlane, topPlane, plane}, lights);
+    Scene scene(cam, std::vector<Mesh> {backPlane, leftPlane, rightPlane, topPlane, plane, model}, lights);
     //DEBUG
     PointCloud pointCloud(10000.f);
     std::cout << "computing point cloud ... \n";
@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
     //PointBasedRenderer::renderPointCloud(debugPointCloudCorner, scene, image);
     //image.savePPM("DebugpointCloudCorner.ppm");
     //RENDERING
-    PointBasedRenderer::render(scene, pointCloud, image, 8);
+    PointBasedRenderer::render(scene, pointCloud, image, 24);
     image.savePPM("PBGI.ppm");
     //PointBasedRenderer::renderPointCloud(pointCloud, scene, image);
     //RayTracer::render(scene, image, 1);

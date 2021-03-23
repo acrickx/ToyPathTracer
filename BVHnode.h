@@ -19,15 +19,18 @@ public:
     inline const Vec3f position() const { return m_sphere.center(); }
     inline const Vec3f normal() const { return m_normal; }
     inline const float normalAngle() const { return m_normalConeAngle; }
-    inline const float radius() const { return m_sphere.radius(); }
+    inline const float radius() const { return m_radius; }
     inline const BVHptr left() const { return m_left; }
     inline const BVHptr right() const { return m_right; }
+    inline const bool  hasChildren() const { return m_hasChildren; }
     inline const std::vector<Surfel> const surfels() { return m_surfels; }
     Vec3f getColor();
 
 private:
     BVHptr m_left = nullptr;
     BVHptr m_right = nullptr;
+    bool m_hasChildren = true;
+    float m_radius = 0;
     Sphere m_sphere{};
     std::vector<Surfel> m_surfels;
     //normal representation

@@ -29,7 +29,7 @@
 		return direction;
 		if (squaredLength >= 1)
 		{
-			return normalize(dot(relPixelPos,m_horizontal)*m_horizontal + dot(relPixelPos,m_vertical)*m_vertical + 0.1f*m_gatheringNormal);
+			return Vec3f(0,0,0);
 		}
 		else
 		{
@@ -65,20 +65,13 @@
 	{			
 		//compute distance and solid angle
 		Vec3f direction = (node->position() - m_gatheringPos);
-		float distance = direction.length();
-		direction.normalize();
-		if (dot(direction, m_gatheringNormal) < 0) { return; }
-		bool hasChildren = (node->surfels().size() > 1);
-		float BVHsolidAngle = 0;
-		if (hasChildren) BVHsolidAngle = M_PI * (node->radius() * node->radius()) / (distance * distance);
-		else if (node->surfels().size() == 1) BVHsolidAngle = M_PI * (node->surfels()[0].radius * node->surfels()[0].radius) / (distance * distance);
+		float distance = direction.length();			
+		float BVHsolidAngle = (node->radius() * node->radius()) / (distance * distance);
 		int indexI, indexJ;
 		directionToPixel(direction, indexI, indexJ);
-		//std::cout << "Pixel solid angle : " << solidAngle(indexI, indexJ)  << " | BVHSolidAngle : " << BVHsolidAngle << std::endl;
-		bool nodeFacesBuffer = (0.5f * M_PI - std::acos((dot(m_gatheringNormal, node->normal())))) < node->normalAngle();
-		if (BVHsolidAngle < solidAngle(indexI, indexJ) && nodeFacesBuffer) //rasterize node directly
+		if (BVHsolidAngle < solidAngle(indexI, indexJ)) //rasterize node directly
 		{
-			if (depth(indexI, indexJ) > distance && nodeFacesBuffer)
+			if (depth(indexI, indexJ) > distance)
 			{
 				setDepthValue(indexI, indexJ, distance);
 				setIndex(indexI, indexJ, node);
@@ -87,7 +80,7 @@
 		}
 		else
 		{
-			if (hasChildren)
+			if (node->hasChildren())
 			{
 				m_depth++;
 				fillMicroBuffer(node->left());
@@ -149,6 +142,7 @@
 			for (int i = 0; i < m_width; i++)
 			{
 				Ray ray(m_gatheringPos, pixelToDirection(i, j));
+				#pragma omp parallel for
 				for (int k = 0; k < m_postTraversalList.size(); k++)
 				{
 					BVHnode::BVHptr node = m_postTraversalList[k];
@@ -176,6 +170,7 @@
 			for (int i = 0; i < m_width; i++)
 			{
 				Ray ray(m_gatheringPos, pixelToDirection(i, j));
+				#pragma omp parallel for
 				for (int k = 0; k < m_postTraversalList.size(); k++)
 				{
 					BVHnode::BVHptr node = m_postTraversalList[k];
@@ -201,13 +196,16 @@
 	{			
 		Vec3f totalColorResponse = mat.albedo;
 		for (int i = 0; i < m_width; i++)
-		{
+		{			
 			for (int j = 0; j < m_height; j++)
 			{
 				float solidAgl = solidAngle(i, j);			
 				Vec3f direction = pixelToDirection(i, j);
-				totalColorResponse += color(i, j) * (mat.diffuse/(float)M_PI)*std::abs(dot(m_gatheringNormal,direction))/15.f;
-				//totalColorResponse += color(i, j) * mat.evaluateColorResponse(m_gatheringPos, m_gatheringNormal, direction)*dot(m_gatheringNormal,direction)/10.f;
+				Vec3f pixelColor = color(i, j) * solidAgl * (mat.diffuse / (float)M_PI) * dot(m_gatheringNormal, direction);
+				if (pixelColor[0] > 0 && pixelColor[1] > 0 && pixelColor[2] > 0)
+				{
+					totalColorResponse += pixelColor;
+				}				
 			}
 		}
 		return totalColorResponse;
