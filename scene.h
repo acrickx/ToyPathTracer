@@ -5,20 +5,24 @@
 #include <omp.h>
 #include "Vec3.h"
 #include "mesh.h"
+#include "BVHnode.h"
 
-class BVHnode;
+class BSHnode;
 
 class Scene
 {
 	private:
 		Camera m_cam;
-		std::vector<Mesh> m_sceneMesh;	
-		std::vector<lightPtr> m_lights;				
+		std::vector<Mesh> m_meshes;	
+		std::vector<lightPtr> m_lights;		
+		BVHroot m_root;
 	public:
-		Scene(Camera _cam, std::vector<Mesh> _mesh, lightPtr _light) : m_cam(_cam), m_sceneMesh(_mesh), m_lights(std::vector<lightPtr> { _light }) { };
-		Scene(Camera _cam, std::vector<Mesh> _mesh, std::vector<lightPtr> _lights) : m_cam(_cam), m_sceneMesh(_mesh), m_lights(_lights) {};		
+		Scene(Camera _cam, std::vector<Mesh> _mesh, lightPtr _light) : m_cam(_cam), m_meshes(_mesh), m_lights(std::vector<lightPtr> { _light }) {};
+		Scene(Camera _cam, std::vector<Mesh> _mesh, std::vector<lightPtr> _lights) : m_cam(_cam), m_meshes(_mesh), m_lights(_lights) {};		
+		inline const BVHroot getBVHroot() const { return m_root; }
+		inline void computeBVH() { m_root = BVHroot(m_meshes); }
 		inline Camera camera() const { return m_cam; }		
 		inline std::vector<lightPtr> lightSources() const { return m_lights; }
-		inline std::vector<Mesh> meshes() const { return m_sceneMesh; }
+		inline std::vector<Mesh> meshes() const { return m_meshes; }
 };
 

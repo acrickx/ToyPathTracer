@@ -22,18 +22,14 @@
 		float size = m_width; // = m_height;
 		Vec3f absPixelPos = pixelToPostion(i, j);
 		Vec3f relPixelPos = absPixelPos-m_gatheringPos;
-		float squaredLength = relPixelPos[0] * relPixelPos[0] + relPixelPos[1] * relPixelPos[1];
-		Vec3f localPixelPos = Vec3f(dot(relPixelPos, m_horizontal), dot(relPixelPos, m_vertical), absPixelPos[2]);
-		Vec3f hemisphericalPoint = absPixelPos + sqrt(1 - squaredLength) * m_gatheringNormal;
-		Vec3f direction = normalize(hemisphericalPoint - m_gatheringPos);
-		return direction;
+		//Vec3f localPixelPos = Vec3f(dot(relPixelPos, m_horizontal), dot(relPixelPos, m_vertical), absPixelPos[2]);
+		float squaredLength = relPixelPos[0] * relPixelPos[0] + relPixelPos[1] * relPixelPos[1];													
 		if (squaredLength >= 1)
 		{
 			return Vec3f(0,0,0);
 		}
 		else
-		{
-			Vec3f localPixelPos = Vec3f(dot(relPixelPos, m_horizontal), dot(relPixelPos, m_vertical), absPixelPos[2]);
+		{			
 			Vec3f hemisphericalPoint = absPixelPos + sqrt(1 - squaredLength) * m_gatheringNormal;			
 			Vec3f direction = normalize(hemisphericalPoint - m_gatheringPos);
 			return direction;
@@ -61,7 +57,7 @@
 	}
 
 	//BVH traversal
-	void MicroBuffer::fillMicroBuffer(BVHnode::BVHptr node)
+	void MicroBuffer::fillMicroBuffer(BSHnode::BSHptr node)
 	{			
 		//compute distance and solid angle
 		Vec3f direction = (node->position() - m_gatheringPos);
@@ -94,7 +90,7 @@
 	}
 
 	//BVH traversal //DEBUG MODE
-	void MicroBuffer::fillMicroBuffer(BVHnode::BVHptr node, std::vector<Surfel>& surfels)
+	void MicroBuffer::fillMicroBuffer(BSHnode::BSHptr node, std::vector<Surfel>& surfels)
 	{		
 		//compute distance and solid angle
 		Vec3f direction = (node->position() - m_gatheringPos);		
@@ -145,7 +141,7 @@
 				#pragma omp parallel for
 				for (int k = 0; k < m_postTraversalList.size(); k++)
 				{
-					BVHnode::BVHptr node = m_postTraversalList[k];
+					BSHnode::BSHptr node = m_postTraversalList[k];
 					Vec3f intersectionPos; float parT = 0;
 					Surfel surfel = node->surfels()[0];
 					if (ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT))
@@ -173,7 +169,7 @@
 				#pragma omp parallel for
 				for (int k = 0; k < m_postTraversalList.size(); k++)
 				{
-					BVHnode::BVHptr node = m_postTraversalList[k];
+					BSHnode::BSHptr node = m_postTraversalList[k];
 					Vec3f intersectionPos; float parT = 0;
 					Surfel surfel = node->surfels()[0];
 					if (ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT))

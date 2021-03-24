@@ -5,22 +5,21 @@
 #include "Vec3.h"
 #include "scene.h"
 #include "surfel.h"
-#include "BVHnode.h"
+#include "BSHnode.h"
 #include <ctime>
 
 class PointCloud {
 private:
 	std::vector<Surfel> m_surfels;
 	float m_samplingRate = 1.f;
-	BVHnode::BVHptr m_BVHroot;
+	BSHnode::BSHptr m_BSHroot;
 public:
 	inline PointCloud(float samplingRate) : m_samplingRate(samplingRate) {};
 	inline PointCloud(std::vector<Surfel> surfels) : m_surfels(surfels) {};
 	//using blue noise sampling
 	inline void computePointCloud(const Scene& scene)
 	{
-		float sampleRad = 1 / (sqrt(m_samplingRate));
-		std::cout << sampleRad << std::endl;
+		float sampleRad = 1 / (sqrt(m_samplingRate));		
 		const std::vector<Mesh>& meshes = scene.meshes();
 		for (int i = 0; i < meshes.size(); i++)
 		{			
@@ -174,11 +173,11 @@ public:
 		sampleNorm = sampleNormTmp;
 	}
 	//compute BVH
-	inline void computeBVH() { m_BVHroot = BVHnode::BVHptr(new BVHnode(m_surfels)); };
+	inline void computeBSH() { m_BSHroot = BSHnode::BSHptr(new BSHnode(m_surfels)); };
 	//accessors
 	inline std::vector<Surfel> surfels() { return m_surfels; }
 	inline const std::vector<Surfel> surfels() const { return m_surfels; }
 	inline float samplingRate() { return m_samplingRate; }
 	inline const float samplingRate() const { return m_samplingRate; }
-	inline const BVHnode::BVHptr BVHroot() const { return m_BVHroot; }
+	inline const BSHnode::BSHptr BVHroot() const { return m_BSHroot; }
 };

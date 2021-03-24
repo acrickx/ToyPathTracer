@@ -22,16 +22,16 @@ public:
 		//initialize vectors
 		m_colors = std::vector<Vec3f>(size * size);
 		m_zBuffer = std::vector<float>(size * size, std::numeric_limits<float>().max());
-		m_indexBuffer = std::vector<BVHnode::BVHptr>(size * size);
+		m_indexBuffer = std::vector<BSHnode::BSHptr>(size * size);
 	};
 	//accessors
 	const size_t size() const { return m_width; }
 	inline const Vec3f color(size_t i, size_t j) const { return m_colors[j * m_width + i]; }
 	inline const float depth(size_t i, size_t j) const { return m_zBuffer[j * m_width + i]; }	
-	inline const BVHnode::BVHptr index(size_t i, size_t j) const { return m_indexBuffer[j * m_width + i]; }
+	inline const BSHnode::BSHptr index(size_t i, size_t j) const { return m_indexBuffer[j * m_width + i]; }
 	inline void setColorValue(size_t i, size_t j, Vec3f colorValue) { m_colors[j * m_width + i] = colorValue; };
 	inline void setDepthValue(size_t i, size_t j, float depthValue) { m_zBuffer[j * m_width + i] = depthValue; };
-	inline void setIndex(size_t i, size_t j, BVHnode::BVHptr index) { m_indexBuffer[j * m_width + i] = index; };
+	inline void setIndex(size_t i, size_t j, BSHnode::BSHptr index) { m_indexBuffer[j * m_width + i] = index; };
 	//pixel/direction mapping
 	bool positionToPixel(Vec3f pos, int& i, int& j);
 	Vec3f pixelToPostion(size_t i, size_t j);
@@ -39,8 +39,8 @@ public:
 	bool directionToPixel(Vec3f direction, int& i, int& j);
 	float solidAngle(size_t i, size_t j);
 	//rendering
-	void fillMicroBuffer(BVHnode::BVHptr node);
-	void fillMicroBuffer(BVHnode::BVHptr node, std::vector<Surfel>& surfels);
+	void fillMicroBuffer(BSHnode::BSHptr node);
+	void fillMicroBuffer(BSHnode::BSHptr node, std::vector<Surfel>& surfels);
 	void postTraversalRayCasting();
 	void postTraversalRayCasting(std::vector<Surfel>& surfels);
 	Vec3f convolveBRDF(Material mat, const Scene& scene);
@@ -56,7 +56,7 @@ private:
 	Vec3f m_bottomLeftCorner;
 	std::vector<Vec3f> m_colors;
 	std::vector<float> m_zBuffer;
-	std::vector<BVHnode::BVHptr> m_indexBuffer;
-	std::vector<BVHnode::BVHptr> m_postTraversalList;
+	std::vector<BSHnode::BSHptr> m_indexBuffer;
+	std::vector<BSHnode::BSHptr> m_postTraversalList;
 };
 

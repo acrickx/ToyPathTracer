@@ -6,7 +6,7 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 {
 	std::vector<Mesh> sceneMeshes = scene.meshes();
 	Camera renderCam = scene.camera();
-	BVHnode::BVHptr root = pointCloud.BVHroot();
+	BSHnode::BSHptr root = pointCloud.BVHroot();
 	//fill background of the image with arbitrary color
 	renderImage.fillBackground(Vec3f(0.5, 0.5, 0.5), Vec3f(0.1f, 0.1f, 0.1f));
 	int width = renderImage.getWidth(); int height = renderImage.getHeight();
@@ -23,8 +23,8 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 			Vec3f totalColorResponse;
 			bool intersectionFound = false;	
 			Ray ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate(float(i) / width, 1.f - (float)j / height)));
-			Vec3f intersectionPos, intersectionNormal; size_t meshIndex; size_t triangleIndex;
-			intersectionFound = RayTracer::rayTrace(ray, scene, intersectionPos, intersectionNormal, meshIndex, triangleIndex);			
+			Vec3f intersectionPos, intersectionNormal; size_t meshIndex;
+			intersectionFound = RayTracer::rayTraceBVH(ray, scene, intersectionPos, intersectionNormal, meshIndex);			
 			if (intersectionFound)
 			{				
 				//microrendering
