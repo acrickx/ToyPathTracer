@@ -1,6 +1,6 @@
 #include "BVHnode.h"
 
- BVHnode::BVHnode(std::vector<Vec3i> connectivity, AABB aabb, const Mesh& mod, int meshIndex)
+ BVHnode::BVHnode(const std::vector<Vec3i>& connectivity, const AABB& aabb, const Mesh& mod, int meshIndex)
 {
     //std::cout << "size : " << connectivity.size() << std::endl;
     //stop condition
@@ -90,7 +90,7 @@
     }    
 }
 
- bool BVHnode::hit(Ray ray, hitInfo& hitRecord, const std::vector<Mesh>& meshes)
+ bool BVHnode::hit(const Ray& ray, hitInfo& hitRecord, const std::vector<Mesh>& meshes)
  {
      float tmin, tmax;
      //the root has no defined bounding box and its meshIndex is = to -1     

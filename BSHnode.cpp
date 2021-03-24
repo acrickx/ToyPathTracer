@@ -6,7 +6,7 @@ BSHnode::BSHnode(const std::vector<Surfel>& surfels)
     new (this) BSHnode(surfels, sphere);
 }
 
- BSHnode::BSHnode(const std::vector<Surfel>& surfels, Sphere sphere)
+ BSHnode::BSHnode(const std::vector<Surfel>& surfels, const Sphere& sphere)
 {
     //stop condition
     if (surfels.size() <= 1)
@@ -79,7 +79,7 @@ BSHnode::BSHnode(const std::vector<Surfel>& surfels)
     }    
 }
 
- Sphere BSHnode::computeBoundingSphere(std::vector<Surfel> surfels)
+ Sphere BSHnode::computeBoundingSphere(const std::vector<Surfel>& surfels)
  {
      const Vec3f& init = surfels[0].position;
      //First step : going through the points to find extreme points along each direction, + compute normal angle

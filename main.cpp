@@ -8,6 +8,10 @@
 #include"pointBasedRenderer.h"
  
 using namespace std;
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::milliseconds;
 
 //debug
 void debugMicrobuffer(size_t i, size_t j, Camera cam, const Scene& scene, BSHnode::BSHptr root)
@@ -80,13 +84,13 @@ int main(int argc, char* argv[])
     }
     Image image(width, height);
     //MESHES
-    Mesh plane = Plane(Vec3f(0, -0.25f, 0), Vec3f(0, 1, 0), Vec3f(1, 0, 0), 0.5f, Material(Vec3f(0.7f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    Mesh topPlane = Plane(Vec3f(0, 0.25f, 0), Vec3f(0, -1, 0), Vec3f(1, 0, 0), 0.5f, Material(Vec3f(0.0f, 0.0f, 0.7f), 1.0f, 1.0f, 0.f));
+    Mesh plane = Plane(Vec3f(0, -0.25f, 0), Vec3f(0, 1, 0), Vec3f(1, 0, 0), 0.5f, Material(Vec3f(0.7f, 0.7f, 0.7f), 1.0f, 0.75f, 0.f));
+    Mesh topPlane = Plane(Vec3f(0, 0.24f, 0), Vec3f(0, -1, 0), Vec3f(1, 0, 0), 0.5f, Material(Vec3f(0.7f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
     Mesh backPlane = Plane(Vec3f(0, 0, -0.25f), Vec3f(0, 0, 1), Vec3f(1, 0, 0), 0.5f , Material(Vec3f(0.7f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
     Mesh leftPlane = Plane(Vec3f(-0.25f, 0, 0.f), Vec3f(1, 0, 0), Vec3f(0, 0, -1), 0.5f, Material(Vec3f(0.7f, 0.0f, 0.0f), 1.0f, 1.0f, 0.f));
     Mesh rightPlane = Plane(Vec3f(0.25f, 0, 0.f), Vec3f(-1, 0, 0), Vec3f(0, 0, 1), 0.5f, Material(Vec3f(0.f, 0.7f, 0.f), 1.0f, 1.0f, 0.f));
-    Mesh model(Material(Vec3f(0.4f, 0.4f, 0.7f), 1.0f, 1.0f, 0.f));    
-    model.loadOFF("example_lowres.off");        
+    Mesh model(Material(Vec3f(0.4f, 0.4f, 0.7f), 0.5f, 0.1f, 0.8f));
+    model.loadOFF("example_lowres.off");
     model.scale(0.5f);
     //TEST BOUNDING BOXES
     //CAMERA
@@ -102,17 +106,21 @@ int main(int argc, char* argv[])
     std::cout << "done.  \n";
     //POINTCLOUD
     std::cout << "computing point cloud ... \n";
-    PointCloud pointCloud(10000.f);
+    PointCloud pointCloud(1000.f);
     pointCloud.computePointCloud(scene);
     std::cout << "done. \n";
     std::cout << "computing BVH for point cloud ... \n";
     pointCloud.computeBSH();
     std::cout << "done. \n";    
-    std::cout << "Point Cloud composed of : " << pointCloud.surfels().size() << " surfels." << std::endl;    
+    std::cout << "Point Cloud composed of : " << pointCloud.surfels().size() << " surfels." << std::endl;
     //RENDERING
-    PointBasedRenderer::render(scene, pointCloud, image, 24);
+    auto t1 = high_resolution_clock::now();
+    //PointBasedRenderer::render(scene, pointCloud, image, 16);
     //PointBasedRenderer::renderPointCloud(pointCloud, scene, image);
-    //RayTracer::render(scene, image, 1);
+    RayTracer::render(scene, image, 1);
+    auto t2 = high_resolution_clock::now();
+    auto chrono = duration_cast<milliseconds>(t2 - t1);
+    std::cout << "duration : " << chrono.count() * 0.001f << std::endl;
     image.savePPM("Test.ppm");
     return 0;
 }

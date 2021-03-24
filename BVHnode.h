@@ -23,8 +23,8 @@ public:
     typedef std::shared_ptr<BVHnode> BVHptr;
 
     inline BVHnode() {}    
-    BVHnode(std::vector<Vec3i> connectivity, AABB aabb, const Mesh& mod, int meshIndex);
-    bool hit(Ray ray, hitInfo& hitRecord, const std::vector<Mesh>& meshes);
+    BVHnode(const std::vector<Vec3i>& connectivity, const AABB& aabb, const Mesh& mod, int meshIndex);
+    bool hit(const Ray& ray, hitInfo& hitRecord, const std::vector<Mesh>& meshes);
 
 private:
     BVHptr m_left = nullptr;
@@ -55,7 +55,7 @@ public:
         m_aabb = AABB(minScene, maxScene);
     };
 
-    bool hit(Ray ray, hitInfo& hitRecord, const std::vector<Mesh>& meshes)
+    bool hit(const Ray& ray, hitInfo& hitRecord, const std::vector<Mesh>& meshes)
     {
         hitInfo closestHit{}; bool intersect = false;
         for (int i = 0; i < m_nodes.size(); i++)

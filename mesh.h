@@ -20,17 +20,17 @@ public:
 	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, lightPtr light, Camera eye) const {
 		float diffuseResponse(diffuse / (float)M_PI);
 		Vec3f wi = normalize(light->getPosition() - position);
-		//Vec3f w0 = normalize(eye.getPosition() - position);		
-		//Vec3f specularResponse = reflectance(wi, w0, normal);
+		Vec3f w0 = normalize(eye.getPosition() - position);		
+		Vec3f specularResponse = reflectance(wi, w0, normal);
 		Vec3f colorResponse = light->colorResponse() * (Vec3f(diffuseResponse)) * std::max(dot(normal, wi), 0.f);
 		return colorResponse;
 	};
-	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, Vec3f direction) const {
+	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, const Vec3f& direction, const Vec3f& cameraPos) const {
 		float diffuseResponse(diffuse / (float)M_PI);
 		Vec3f wi = direction;
-		//Vec3f w0 = normalize(eye.getPosition() - position);		
-		//Vec3f specularResponse = reflectance(wi, w0, normal);
-		Vec3f colorResponse = (Vec3f(diffuseResponse)) * std::max(dot(normal, wi), 0.f);
+		Vec3f w0 = normalize(cameraPos - position);		
+		Vec3f specularResponse = reflectance(wi, w0, normal);
+		Vec3f colorResponse = (Vec3f(diffuseResponse)+specularResponse) * std::max(dot(normal, wi), 0.f);
 		return colorResponse;
 	};
 private:
@@ -40,7 +40,10 @@ private:
 		Vec3f wh = normalize(wi + wo);
 		Vec3f F0(0.04f);
 		F0 = mix(F0, albedo, metallic);
-		return (G_GGX(wi, wo, alpha, n) * F(std::max(dot(wi, wh), 0.f), F0) * D(alpha, wh, n)) / (4 * dot(n, wi) * dot(n, wo));
+		float term1 = G_GGX(wi, wo, alpha, n);		
+		Vec3f term2 = F(std::max(dot(wi, wh), 0.f), F0);		
+		float term3 = D(alpha, wh, n);		
+		return term1*term2 *term3/(4 * dot(n, wi) * dot(n, wo));
 	}
 	float G(Vec3f w, Vec3f n, float alpha) const
 	{
@@ -79,6 +82,7 @@ class Mesh
 		//loading model
 		void loadOFF(std::string filepath);
 		void scale(float scale) { for (int i = 0; i < m_vertices.size(); i++) { m_vertices[i] *= scale; } m_boundingBox.min() *= scale; m_boundingBox.max() *= scale; }
+		void translate(Vec3f translate) { for (int i = 0; i < m_vertices.size(); i++) { m_vertices[i] += translate; } m_boundingBox.min() += translate; m_boundingBox.max() += translate; }
 		//normal computations
 		void computeNormals();
 		inline const Vec3f interpPos(Vec3f barCoord, Vec3i triangleIndices) const { return (barCoord[2] * m_vertices[triangleIndices[0]] + barCoord[0] * m_vertices[triangleIndices[1]] + barCoord[1] * m_vertices[triangleIndices[2]]); } 

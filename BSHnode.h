@@ -14,8 +14,8 @@ public:
     using BSHptr = std::shared_ptr<BSHnode>;
     typedef std::shared_ptr<BSHnode> BSHptr;    
     BSHnode(const std::vector<Surfel>& surfels);    
-    BSHnode(const std::vector<Surfel>& surfels, Sphere sphere);
-    Sphere computeBoundingSphere(std::vector<Surfel> surfels);  
+    BSHnode(const std::vector<Surfel>& surfels, const Sphere& sphere);
+    Sphere computeBoundingSphere(const std::vector<Surfel>& surfels);  
     inline const Vec3f position() const { return m_sphere.center(); }
     inline const Vec3f normal() const { return m_normal; }
     inline const float normalAngle() const { return m_normalConeAngle; }
