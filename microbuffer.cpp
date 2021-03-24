@@ -65,15 +65,15 @@
 	{			
 		//compute distance and solid angle
 		Vec3f direction = (node->position() - m_gatheringPos);
-		float distance = direction.length();			
-		float BVHsolidAngle = (node->radius() * node->radius()) / (distance * distance);
+		float distance_sq = direction.squaredLength();			
+		float BVHsolidAngle = (node->radius() * node->radius())/distance_sq;
 		int indexI, indexJ;
 		directionToPixel(direction, indexI, indexJ);
 		if (BVHsolidAngle < solidAngle(indexI, indexJ)) //rasterize node directly
 		{
-			if (depth(indexI, indexJ) > distance)
+			if (depth(indexI, indexJ) > distance_sq)
 			{
-				setDepthValue(indexI, indexJ, distance);
+				setDepthValue(indexI, indexJ, distance_sq);
 				setIndex(indexI, indexJ, node);
 				setColorValue(indexI, indexJ, node->getColor());				
 			}
@@ -178,7 +178,7 @@
 					Surfel surfel = node->surfels()[0];
 					if (ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT))
 					{
-						if (parT < depth(i, j))
+						if (parT*parT < depth(i, j))
 						{	
 							setDepthValue(i, j, parT);
 							setIndex(i, j, m_postTraversalList[k]);

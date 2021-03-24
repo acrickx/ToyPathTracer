@@ -54,7 +54,7 @@ void debugMicrobuffer(Vec3f position, Vec3f normal, const Scene& scene, BVHnode:
 int main(int argc, char* argv[])
 {
     float aspectRatio = 1.f;
-    size_t width=600, height= width/aspectRatio;
+    size_t width=50, height= width/aspectRatio;
     string filename="backgroundImage.ppm";
     //"Usage : ./MyRayTracer –width <width> -height <height> -output <filename.ppm>" << std::endl;
     if (argc >1)
@@ -88,13 +88,6 @@ int main(int argc, char* argv[])
     Mesh model(Material(Vec3f(0.4f, 0.4f, 0.7f), 1.0f, 1.0f, 0.f));    
     model.loadOFF("example_lowres.off");        
     model.scale(0.5f);
-    //Mesh cubePlane = Plane(Vec3f(0, -0.3f, 0), Vec3f(0, 1, 0), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    //Mesh cubeTopPlane = Plane(Vec3f(0, -0.1f, 0), Vec3f(0, -1, 0), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    //Mesh cubeBackPlane = Plane(Vec3f(0, -0.2f, -0.1f), Vec3f(0, 0, 1), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    //Mesh cubeFrontPlane = Plane(Vec3f(0, -0.2f, 0.1f), Vec3f(0, 0, 1), Vec3f(1, 0, 0), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    //Mesh cubeLeftPlane = Plane(Vec3f(-0.1f, -0.2f, 0.f), Vec3f(1, 0, 0), Vec3f(0, 0, -1), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    //Mesh cubeRightPlane = Plane(Vec3f(0.1f, -0.2f, 0.f), Vec3f(-1, 0, 0), Vec3f(0, 0, 1), 0.2f, Material(Vec3f(0.1f, 0.7f, 0.7f), 1.0f, 1.0f, 0.f));
-    //
     //CAMERA
     Camera cam(Vec3f(0, 0.0f, 0.75f), Vec3f(0, 0, 0.f), Vec3f(0, 1, 0), 45.f);
     //LIGHTS 
@@ -133,7 +126,7 @@ int main(int argc, char* argv[])
     //PointBasedRenderer::renderPointCloud(debugPointCloudCorner, scene, image);
     //image.savePPM("DebugpointCloudCorner.ppm");
     //RENDERING
-    PointBasedRenderer::render(scene, pointCloud, image, 24);
+    PointBasedRenderer::render(scene, pointCloud, image, 8);
     image.savePPM("PBGI.ppm");
     //PointBasedRenderer::renderPointCloud(pointCloud, scene, image);
     //RayTracer::render(scene, image, 1);
