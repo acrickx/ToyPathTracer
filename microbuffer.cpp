@@ -3,44 +3,46 @@
 #include"microbuffer.h"
 
 //Coordinate system changes and pixel/direction mapping
-	bool MicroBuffer::positionToPixel(Vec3f pos, int& i, int& j) 
+	bool MicroBuffer::positionToPixel(const Vec3f& pos, int& i, int& j) 
 	{
-		i = (size_t)(dot(pos - m_bottomLeftCorner, m_horizontal)*(m_width-1)/2.f);
-		j = (size_t)(dot(pos - m_bottomLeftCorner, m_vertical)*(m_height-1)/2.f);
-		if (i > m_width-1 || i<0|| j>m_height-1 || j < 0) { std::cerr << "error : given pos is outside the image bounds - coord found : (" << i << "," << j << ")\n"; return false; }
+		i = (int)(floor(dot(pos - m_bottomLeftCorner, m_horizontal) * (m_width-1) / 2.f));
+		j = (int)(floor(dot(pos - m_bottomLeftCorner, m_vertical) * (m_height-1) / 2.f));
+		if (i > m_width-1 || i<0|| j>m_height-1 || j < 0) { 
+			//std::cerr << "error : given pos is outside the image bounds - coord found : (" << i << "," << j << ")\n"; 
+			return false; 
+		}
 		return true;
 	}
 
-	Vec3f MicroBuffer::pixelToPostion(size_t i, size_t j)
+	Vec3f MicroBuffer::pixelToPostion(int i, int j)
 	{
-		if (i > m_width || i<0 || j>m_height || j < 0) { std::cerr << "error : given pos is outside the image bounds - coord : (" << i << "," << j << ")\n";}
+		//if (i > m_width || i<0 || j>m_height || j < 0) { std::cerr << "error : given pos is outside the image bounds - coord : (" << i << "," << j << ")\n";}
 		return m_bottomLeftCorner + m_horizontal * 2 * i / (m_width-1) + m_vertical * 2 * j / (m_height-1);
 	}
 
-	Vec3f MicroBuffer::pixelToDirection(size_t i, size_t j)
+	Vec3f MicroBuffer::pixelToDirection(int i, int j)
 	{
 		Vec3f direction;
 		float size = m_width; // = m_height;
-		Vec3f absPixelPos = pixelToPostion(i, j);
-		Vec3f relPixelPos = absPixelPos-m_gatheringPos;		
+		const Vec3f& absPixelPos = pixelToPostion(i, j);
+		Vec3f relPixelPos = absPixelPos-m_gatheringPos;			
 		float squaredLength = relPixelPos[0] * relPixelPos[0] + relPixelPos[1] * relPixelPos[1];
-		if (squaredLength >= 1)
+		if (squaredLength < 1.f)
 		{
-			return direction;
+			Vec3f hemisphericalPoint = absPixelPos + sqrt(1.f - squaredLength) * m_gatheringNormal;			
+			direction = normalize(hemisphericalPoint - m_gatheringPos);
 		}
-		Vec3f hemisphericalPoint = absPixelPos + sqrt(1 - squaredLength) * m_gatheringNormal;			
-		direction = normalize(hemisphericalPoint - m_gatheringPos);
 		return direction;		
 	}
 
-	bool MicroBuffer::directionToPixel(Vec3f direction, int& i, int& j)
+	bool MicroBuffer::directionToPixel(const Vec3f& direction, int& i, int& j)
 	{ 
 		Vec3f normDirection = normalize(direction);
 		Vec3f normalizedPixelPos = m_gatheringPos + normDirection - dot(normDirection, m_gatheringNormal)*m_gatheringNormal ;		
 		return positionToPixel(normalizedPixelPos,i,j);
 	}
 
-	float MicroBuffer::solidAngle(size_t i, size_t j)
+	float MicroBuffer::solidAngle(int i, int j)
 	{
 		if (i < 1) i++;
 		if (i > m_width-1) i--;
@@ -130,7 +132,7 @@
 				#pragma omp parallel for
 				for (int k = 0; k < m_postTraversalList.size(); k++)
 				{
-					BSHnode::BSHptr node = m_postTraversalList[k];
+					const BSHnode::BSHptr& node = m_postTraversalList[k];
 					Vec3f intersectionPos; float parT = 0;
 					Surfel surfel = node->surfels()[0];
 					if (ray.testDiscIntersection(surfel.position, surfel.normal, surfel.radius, intersectionPos, parT))
@@ -177,19 +179,19 @@
 	}
 
 	//convolve microbuffer with BRDF
-	Vec3f MicroBuffer::convolveBRDF(Material mat, const Scene& scene)
+	Vec3f MicroBuffer::convolveBRDF(const Material& mat, const Scene& scene)
 	{			
-		Vec3f eye = scene.camera().getPosition();
+		const Vec3f& eye = scene.camera().getPosition();
 		Vec3f totalColorResponse = mat.albedo;
 		for (int i = 0; i < m_width; i++)
 		{			
 			for (int j = 0; j < m_height; j++)
 			{
 				float solidAgl = solidAngle(i, j);			
-				Vec3f direction = pixelToDirection(i, j);
+				const Vec3f& direction = pixelToDirection(i, j);
 				if (direction != Vec3f(0, 0, 0))
 				{
-					Vec3f pixelColor = color(i, j) * solidAgl * mat.evaluateColorResponse(m_gatheringPos,m_gatheringNormal,direction,eye)*0.9f;
+					Vec3f pixelColor = color(i, j) * solidAgl * mat.evaluateColorResponse(m_gatheringPos,m_gatheringNormal,direction,eye);
 					totalColorResponse += pixelColor;
 				}
 			}

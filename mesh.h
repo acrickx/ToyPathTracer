@@ -17,24 +17,24 @@ public:
 	float metallic;
 	Material() { albedo = Vec3f(0.5f, 0.5f, 0.5f); diffuse = 1.f; roughness = 0.5f; metallic = 0.5f; }
 	Material(Vec3f _albedo, float _diffuse, float _roughness, float _specular) : albedo(_albedo), diffuse(_diffuse), roughness(_roughness), metallic(_specular) {};
-	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, lightPtr light, Camera eye) const {
+	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, const lightPtr& light, const Camera& eye) const {
 		float diffuseResponse(diffuse / (float)M_PI);
-		Vec3f wi = normalize(light->getPosition() - position);
+		const Vec3f& wi = normalize(light->getPosition() - position);
 		Vec3f w0 = normalize(eye.getPosition() - position);		
-		Vec3f specularResponse = reflectance(wi, w0, normal);
+		const Vec3f& specularResponse = reflectance(wi, w0, normal);
 		Vec3f colorResponse = light->colorResponse() * (Vec3f(diffuseResponse)) * std::max(dot(normal, wi), 0.f);
 		return colorResponse;
 	};
 	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, const Vec3f& direction, const Vec3f& cameraPos) const {
 		float diffuseResponse(diffuse / (float)M_PI);
-		Vec3f wi = direction;
+		const Vec3f& wi = direction;
 		Vec3f w0 = normalize(cameraPos - position);		
-		Vec3f specularResponse = reflectance(wi, w0, normal);
+		const Vec3f& specularResponse = reflectance(wi, w0, normal);
 		Vec3f colorResponse = (Vec3f(diffuseResponse)+specularResponse) * std::max(dot(normal, wi), 0.f);
 		return colorResponse;
 	};
 private:
-	inline Vec3f reflectance(Vec3f wi, Vec3f wo, Vec3f n) const
+	inline Vec3f reflectance(const Vec3f& wi,const Vec3f& wo,const Vec3f& n) const
 	{
 		float alpha = roughness * roughness;
 		Vec3f wh = normalize(wi + wo);
@@ -45,21 +45,21 @@ private:
 		float term3 = D(alpha, wh, n);		
 		return term1*term2 *term3/(4 * dot(n, wi) * dot(n, wo));
 	}
-	float G(Vec3f w, Vec3f n, float alpha) const
+	float G(const Vec3f& w,const Vec3f& n, float alpha) const
 	{
 		return 2.0 * (dot(n, w)) / (dot(n, w) + sqrt(pow(alpha, 2) + (1 - pow(alpha, 2)) * pow(dot(n, w), 2)));
 	}
 
-	float G_GGX(Vec3f wi, Vec3f wo, float alpha, Vec3f n) const
+	float G_GGX(const Vec3f& wi,const Vec3f& wo, float alpha,const Vec3f& n) const
 	{
 		return G(wi, n, alpha) * G(wo, n, alpha);
 	}
 
-	Vec3f F(float cosTheta, Vec3f f0) const
+	Vec3f F(float cosTheta,const Vec3f& f0) const
 	{
 		return f0 + (Vec3f(1.f, 1.f, 1.f) - f0) * pow(1.0 - cosTheta, 5.0);
 	}
-	float D(float alpha, Vec3f m, Vec3f n) const
+	float D(float alpha, const Vec3f& m,const Vec3f& n) const
 	{
 		return (pow(alpha, 2)) / (3.1415926 * pow((1 + pow(dot(n, m), 2) * (pow(alpha, 2) - 1)), 2));
 	}
@@ -99,7 +99,7 @@ class Mesh
 		inline const Vec3<Vec3f> triangle(Vec3i triangleIndices) const { return Vec3<Vec3f>(m_vertices[triangleIndices[0]], m_vertices[triangleIndices[1]], m_vertices[triangleIndices[2]]); }
 		inline const std::vector<Vec3f>& normals() const { return m_normals; }
 		inline const AABB& boundingBox() const { return m_boundingBox; }
-		inline const Material material() const { return m_mat; }	
+		inline const Material& material() const { return m_mat; }	
 		//Cornell Box initializer		
 };
 

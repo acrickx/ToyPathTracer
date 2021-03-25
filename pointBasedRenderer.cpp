@@ -4,9 +4,9 @@
 //called to render image from scene
 Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointCloud, Image& renderImage, size_t microBufferSize)
 {
-	std::vector<Mesh> sceneMeshes = scene.meshes();
-	Camera renderCam = scene.camera();
-	BSHnode::BSHptr root = pointCloud.BVHroot();
+	const std::vector<Mesh>& sceneMeshes = scene.meshes();
+	const Camera& renderCam = scene.camera();
+	const BSHnode::BSHptr& root = pointCloud.BVHroot();
 	//fill background of the image with arbitrary color
 	renderImage.fillBackground(Vec3f(0.5, 0.5, 0.5), Vec3f(0.1f, 0.1f, 0.1f));
 	int width = renderImage.getWidth(); int height = renderImage.getHeight();
@@ -19,8 +19,7 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 		#pragma omp parallel for
 		for (int i = 0; i < width; i++)
 		{
-			//create rays for intersection test
-			Vec3f totalColorResponse;
+			//create rays for intersection test			
 			bool intersectionFound = false;	
 			Ray ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate(float(i) / width, 1.f - (float)j / height)));
 			Vec3f intersectionPos, intersectionNormal; size_t meshIndex;
@@ -31,7 +30,8 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 				MicroBuffer mBuffer(microBufferSize, intersectionPos+0.01f*intersectionNormal, intersectionNormal);							
 				mBuffer.fillMicroBuffer(root);
 				mBuffer.postTraversalRayCasting();
-				renderImage(i,j) = mBuffer.convolveBRDF(scene.meshes()[meshIndex].material(), scene);
+				const Material& mat = scene.meshes()[meshIndex].material();
+				renderImage(i,j) = mBuffer.convolveBRDF(mat, scene);
 			}			
 		}
 	}
@@ -39,7 +39,7 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 }
 
 //called to render image from positions, colors and normals directly (debug point cloud)
-Image PointBasedRenderer::renderPointCloud(PointCloud pointCloud, const Scene& scene, Image& renderImage)
+Image PointBasedRenderer::renderPointCloud(const PointCloud& pointCloud, const Scene& scene, Image& renderImage)
 {
 	std::vector<Surfel> surfels = pointCloud.surfels();
 	std::vector<lightPtr> lights = scene.lightSources();

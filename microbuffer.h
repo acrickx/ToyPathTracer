@@ -33,17 +33,17 @@ public:
 	inline void setDepthValue(size_t i, size_t j, float depthValue) { m_zBuffer[j * m_width + i] = depthValue; };
 	inline void setIndex(size_t i, size_t j, BSHnode::BSHptr index) { m_indexBuffer[j * m_width + i] = index; };
 	//pixel/direction mapping
-	bool positionToPixel(Vec3f pos, int& i, int& j);
-	Vec3f pixelToPostion(size_t i, size_t j);
-	Vec3f pixelToDirection(size_t i, size_t j);
-	bool directionToPixel(Vec3f direction, int& i, int& j);
-	float solidAngle(size_t i, size_t j);
+	bool positionToPixel(const Vec3f& pos, int& i, int& j);
+	Vec3f pixelToPostion(int i, int j);
+	Vec3f pixelToDirection(int i, int j);
+	bool directionToPixel(const Vec3f& direction, int& i, int& j);
+	float solidAngle(int i, int j);
 	//rendering
 	void fillMicroBuffer(BSHnode::BSHptr node);
 	void fillMicroBuffer(BSHnode::BSHptr node, std::vector<Surfel>& surfels);
 	void postTraversalRayCasting();
 	void postTraversalRayCasting(std::vector<Surfel>& surfels);
-	Vec3f convolveBRDF(Material mat, const Scene& scene);
+	Vec3f convolveBRDF(const Material& mat, const Scene& scene);
 
 private:
 	size_t m_width = 0;

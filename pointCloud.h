@@ -19,7 +19,7 @@ public:
 	//using blue noise sampling
 	inline void computePointCloud(const Scene& scene)
 	{
-		float sampleRad = 1 / (sqrt(m_samplingRate));		
+		float sampleRad = 1 / (2*sqrt(m_samplingRate));		
 		const std::vector<Mesh>& meshes = scene.meshes();
 		for (int i = 0; i < meshes.size(); i++)
 		{			

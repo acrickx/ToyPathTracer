@@ -55,7 +55,7 @@ public:
         m_aabb = AABB(minScene, maxScene);
     };
 
-    bool hit(const Ray& ray, hitInfo& hitRecord, const std::vector<Mesh>& meshes)
+    bool hit(const Ray& ray, hitInfo& hitRecord, const std::vector<Mesh>& meshes) const
     {
         hitInfo closestHit{}; bool intersect = false;
         for (int i = 0; i < m_nodes.size(); i++)

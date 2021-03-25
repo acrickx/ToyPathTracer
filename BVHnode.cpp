@@ -103,7 +103,7 @@
              for (int i = 0; i < m_connectivity.size(); i++)
              {
                  float t; Vec3f barCoord;
-                 bool triangleIntersect = ray.testTriangleIntersection(meshes[m_meshIndex].triangle(m_connectivity[i]), barCoord, t, 0.0001f);
+                 bool triangleIntersect = ray.testTriangleIntersection(meshes[m_meshIndex].triangle(m_connectivity[i]), barCoord, t);
                  if (triangleIntersect && t < hitRecord.parT)
                  {                     
                      hitRecord.barCoord = barCoord;

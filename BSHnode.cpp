@@ -93,7 +93,7 @@ BSHnode::BSHnode(const std::vector<Surfel>& surfels)
              if (abs(angle) > abs(m_normalConeAngle)) m_normalConeAngle = angle;             
          }
          //test center to find extreme points in each direction & filling the two subsets
-         Vec3f center = surfels[i].position;
+         const Vec3f& center = surfels[i].position;
          if (center[0] < minX[0]) minX = center;
          else if (center[0] > maxX[0]) maxX = center;
          if (center[1] < minY[1]) minY = center;
@@ -120,7 +120,7 @@ BSHnode::BSHnode(const std::vector<Surfel>& surfels)
      Sphere sphere(ctr, (maxPt - ctr).length());
      for (int i = 0; i < surfels.size(); i++)
      {
-         Vec3f pos = surfels[i].position;
+         const Vec3f& pos = surfels[i].position;
          float dist = (pos - sphere.center()).length();
          //if point is outside sphere
          if (dist > sphere.radius())
