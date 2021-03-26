@@ -2,7 +2,7 @@
 
 
 //called to render image from scene
-Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointCloud, Image& renderImage, size_t microBufferSize)
+Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointCloud, Image& renderImage, size_t microBufferSize, size_t rayPerPixel)
 {
 	const std::vector<Mesh>& sceneMeshes = scene.meshes();
 	const Camera& renderCam = scene.camera();
@@ -19,20 +19,28 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 		#pragma omp parallel for
 		for (int i = 0; i < width; i++)
 		{
-			//create rays for intersection test			
-			bool intersectionFound = false;	
-			Ray ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate(float(i) / width, 1.f - (float)j / height)));
-			Vec3f intersectionPos, intersectionNormal; size_t meshIndex;
-			intersectionFound = RayTracer::rayTraceBVH(ray, scene, intersectionPos, intersectionNormal, meshIndex);			
-			if (intersectionFound)
-			{				
-				//microrendering
-				MicroBuffer mBuffer(microBufferSize, intersectionPos+0.01f*intersectionNormal, intersectionNormal);							
-				mBuffer.fillMicroBuffer(root);
-				mBuffer.postTraversalRayCasting();
-				const Material& mat = scene.meshes()[meshIndex].material();
-				renderImage(i,j) = mBuffer.convolveBRDF(mat, scene);
-			}			
+			//create rays for intersection test					
+			Vec3f totalColorResponse;	
+			bool intersection=false;
+			for (int k = 0; k < rayPerPixel; k++)
+			{
+				Ray scatteredRay;
+				if (rayPerPixel == 1) scatteredRay = Ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate((float(i) / width), (1.f - (float)j / height))));
+				else scatteredRay = Ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate(float(i) / width + ((std::rand() % 100) / (float)100) * (1 / (float)width), 1.f - (((float)j / height) + ((std::rand() % 100) / (float)100) * (1 / (float)height)))));
+				Vec3f intersectionPos, intersectionNormal; size_t meshIndex;
+				bool intersectionFound = RayTracer::rayTraceBVH(scatteredRay, scene, intersectionPos, intersectionNormal, meshIndex);
+				if (intersectionFound)
+				{
+					//microrendering
+					MicroBuffer mBuffer(microBufferSize, intersectionPos + 0.01f * intersectionNormal, intersectionNormal);
+					mBuffer.fillMicroBuffer(root);
+					mBuffer.postTraversalRayCasting();
+					const Material& mat = scene.meshes()[meshIndex].material();
+					totalColorResponse += mBuffer.convolveBRDF(mat, scene)/(float)rayPerPixel;
+					intersection = true;
+				}
+			}
+			if (intersection) renderImage(i, j) = totalColorResponse;
 		}
 	}
 	return renderImage;

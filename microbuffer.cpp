@@ -52,7 +52,6 @@
 		Vec3f dy = (pixelToDirection(i, j+1) - pixelToDirection(i, j-1)) / 2.f;
 		float solidAngle = dx.length() * dy.length();
 		return solidAngle;
-		//return(dot(pixelToDirection(i, j), m_gatheringNormal)/20.f);
 	}
 
 	//BVH traversal
@@ -96,7 +95,7 @@
 		float distance = direction.length();
 		float BVHsolidAngle = (node->radius() * node->radius()) / (distance * distance);
 		int indexI, indexJ;
-		directionToPixel(direction, indexI, indexJ);
+		directionToPixel(direction, indexI, indexJ);		
 		if (BVHsolidAngle < solidAngle(indexI, indexJ)) //rasterize node directly
 		{
 			if (depth(indexI, indexJ) > distance)
@@ -110,7 +109,7 @@
 		else
 		{
 			if (node->hasChildren())
-			{				
+			{
 				fillMicroBuffer(node->left());
 				fillMicroBuffer(node->right());
 			}

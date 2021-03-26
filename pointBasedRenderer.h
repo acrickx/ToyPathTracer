@@ -11,8 +11,9 @@
 class  PointBasedRenderer
 {
 	public:				
-		static Image render(const Scene& scene, const PointCloud& pointCloud, Image& renderImage, size_t microbuffersize);
-		static Image renderPointCloud(const PointCloud& pointCloud, const Scene& scene, Image& renderImage);
-	private:
-
+		static Image render(const Scene& scene, const PointCloud& pointCloud, Image& renderImage, size_t microbuffersize, size_t rayPerPixel);
+		static Image renderPointCloud(const PointCloud& pointCloud, const Scene& scene, Image& renderImage);		
 };
+
+
+
