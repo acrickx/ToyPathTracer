@@ -1,6 +1,7 @@
 #pragma once
 
 #include"Vec3.h"
+#include"ray.h"
 class Camera
 {
 	public:
@@ -26,6 +27,7 @@ class Camera
 		inline const Vec3f getImageCoordinate(float i, float j) const { return m_bottomLeftCorner - m_focalLength*m_position + (float)i * m_horizontal + (float)j * m_vertical;}
 		inline const Vec3f getPosition() const { return m_position; }
 		inline const Vec3f getBLcorner() const { return m_bottomLeftCorner; }		
+		inline const Ray rayAt(float u, float v) const { return Ray(m_position, m_bottomLeftCorner + u * m_horizontal + v * m_vertical);  }
 	private:
 		//need to be specified
 		Vec3f m_position;

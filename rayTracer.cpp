@@ -1,44 +1,73 @@
 #include "rayTracer.h"
 
-
 //called to render image from scene
 void RayTracer::render(const Scene& scene, Image& renderImage, size_t rayPerPixel = 8)
 {
 	const std::vector<Mesh>& sceneMeshes = scene.meshes();
 	const Camera& renderCam = scene.camera();
+	const Vec3f& camPos = renderCam.getPosition();
 	//fill background of the image with arbitrary color
 	renderImage.fillBackground(Vec3f(0.5, 0.5, 0.5), Vec3f(0.1f, 0.1f, 0.1f));
 	int width = renderImage.getWidth(); int height = renderImage.getHeight();
+	#pragma omp parallel for schedule(dynamic, 1)  
 	for (int j = 0; j < height; j++)
 	{
-		//display progress with dots
-		size_t progress = 0;
-		if (progress % 10 == 0) std::cout << ".";
-		progress++;
-		#pragma omp parallel for
+		//display progress in percentage
+		fprintf(stderr, "\rRendering (%i samples): %.2f%% ",      // Prints
+			rayPerPixel, (double)j / height * 100);
+
 		for (int i = 0; i < width; i++)
 		{
 			//create rays for intersection test
 			Vec3f totalColorResponse;
 			bool intersectionFound = false;
-			bool intersection = false;
 			for (int k = 0; k < rayPerPixel; k++)
 			{
-				Ray scatteredRay;
-				if (rayPerPixel == 1) scatteredRay = Ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate((float(i) / width), (1.f - (float)j / height))));
-				else scatteredRay = Ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate(float(i) / width + ((std::rand() % 100) / (float)100) * (1 / (float)width), 1.f - (((float)j / height) + ((std::rand() % 100) / (float)100) * (1 / (float)height)))));
-				Vec3f intersectionPos, intersectionNormal; size_t meshIndex;
-				intersectionFound = rayTraceBVH(scatteredRay, scene, intersectionPos, intersectionNormal, meshIndex);
-				if (intersectionFound)
-				{
-					if (!intersection) intersection = true;
-					totalColorResponse += shade(intersectionPos, intersectionNormal, sceneMeshes[meshIndex].material(), scene) / (float)rayPerPixel;
-				}
+				float rd_width = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+				float rd_height = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+				Ray scatteredRay = renderCam.rayAt((i + rd_width) / (float)width, 1 - (j + rd_height) / (float)height);
+				totalColorResponse += pathTrace(scatteredRay, 0, scene, 3);
 			}
-			if (intersection) renderImage(i, j) = totalColorResponse;
+			renderImage(i, j) = totalColorResponse / (float)rayPerPixel;			
 		}
 	}
 }
+
+Vec3f RayTracer::pathTrace(Ray ray, size_t current, const Scene& scene, size_t maxBounces = 2)
+{
+	if (current >= maxBounces)
+	{
+		//Final bounce
+		Vec3f intersectionPos, intersectionNormal; size_t meshIndex;
+		bool intersectionFound = RayTracer::rayTraceBVH(ray, scene, intersectionPos, intersectionNormal, meshIndex);
+		Vec3f nextPointColor(0, 0, 0);
+		if (intersectionFound)
+		{
+			nextPointColor = directLightingShade(intersectionPos, intersectionNormal, scene.meshes()[meshIndex].material(), scene);
+		}
+		return nextPointColor;
+	}
+	else
+	{		
+		Vec3f pathResponse(0,0,0);
+		Vec3f intersectionPos, intersectionNormal; size_t meshIndex;
+		bool intersectionFound = RayTracer::rayTraceBVH(ray, scene, intersectionPos, intersectionNormal, meshIndex);
+		if (intersectionFound)
+		{
+			//direct lighting contribution
+			Material hitMat = scene.meshes()[meshIndex].material();
+			Vec3f directLight = RayTracer::directLightingShade(intersectionPos, intersectionNormal, hitMat, scene);
+			current++;
+			//Uniform random sample of the directions
+			Ray segment = hitMat.pureDiffuseReflectedRay(ray.direction, intersectionPos, intersectionNormal);			
+			//Get recursively contribution of next bounce (indirect lighting contribution)
+			Vec3f indirectLight = pathTrace(segment, current, scene, maxBounces);	
+			pathResponse = directLight + indirectLight * (hitMat.diffuse/M_PI) * dot(segment.direction, intersectionNormal);
+		}					 
+		return pathResponse;
+	}
+}
+
 
 //actually raytrace the scene with a given ray (loop over all triangles)
 bool RayTracer::rayTrace(const Ray& ray, const Scene& scene, Vec3f& intersectionPos, Vec3f& intersectionNormal, size_t& meshIndex)
@@ -49,7 +78,6 @@ bool RayTracer::rayTrace(const Ray& ray, const Scene& scene, Vec3f& intersection
 	for (int l = 0; l < sceneMeshes.size(); l++)
 	{
 		const Mesh& sceneMesh = sceneMeshes[l];
-		#pragma omp parallel for
 		for (int k = 0; k < sceneMesh.indices().size(); k++)
 		{
 			//get triangle info
@@ -77,7 +105,7 @@ bool RayTracer::rayTrace(const Ray& ray, const Scene& scene, Vec3f& intersection
 
 //BVH raytracer
 bool RayTracer::rayTraceBVH(const Ray& ray, const Scene& scene, Vec3f& intersectionPos, Vec3f& intersectionNormal, size_t& meshIndex)
-{
+{ 
 	bool intersectFound = false;
 	const BVHroot& root = scene.getBVHroot();
 	hitInfo hitRecord;	
@@ -85,8 +113,7 @@ bool RayTracer::rayTraceBVH(const Ray& ray, const Scene& scene, Vec3f& intersect
 	{
 		intersectFound = true;
 		meshIndex = hitRecord.meshIndex;				
-		Vec3i triangleIndices = hitRecord.triangleIndices;
-		//Mesh sceneMesh = scene.meshes()[meshIndex];		
+		Vec3i triangleIndices = hitRecord.triangleIndices;		
 		const std::vector<Vec3f>& vertices = scene.meshes()[meshIndex].vertices();
 		const std::vector<Vec3f>& normals = scene.meshes()[meshIndex].normals();
 		//return intersection position and normal by interpoling using barycentric coordinates
@@ -96,19 +123,27 @@ bool RayTracer::rayTraceBVH(const Ray& ray, const Scene& scene, Vec3f& intersect
 	return intersectFound;
 }
 
-Vec3f RayTracer::shade(const Vec3f& position, const Vec3f& normal, const Material& mat, const Scene& scene)
+//evaluate radiance at a given position
+Vec3f RayTracer::evaluateRadiance(const Vec3f& position, const Vec3f& normal, const Material& mat, const Scene& scene, const Vec3f& lightPos, const Vec3f& lightColor)
+{
+	Vec3f colorResponse;
+	Ray shadowRay = Ray(position, lightPos);
+	Vec3f shadowInterPos, shadowInterNormal; size_t shadowMeshIndex;
+	bool shadowIntersect = RayTracer::rayTraceBVH(shadowRay, scene, shadowInterPos, shadowInterNormal, shadowMeshIndex);
+	if (!shadowIntersect || (position - shadowInterPos).length() <= 0.0001f)
+	{
+		colorResponse = lightColor*mat.evaluateDiffuseColorResponse(normal, normalize(lightPos - position));
+	}
+	return colorResponse;
+}
+
+Vec3f RayTracer::directLightingShade(const Vec3f& position, const Vec3f& normal, const Material& mat, const Scene& scene)
 {
 	const std::vector<lightPtr>& lights = scene.lightSources();
 	Vec3f totalColor = mat.albedo;
 	for (int i = 0; i < lights.size(); i++)
 	{
-		Ray shadowRay = Ray(position + normal * 0.001f, lights[i]->getPosition());
-		Vec3f shadowInterPos, shadowInterNormal; size_t shadowMeshIndex;
-		bool shadowIntersect = rayTrace(shadowRay, scene, shadowInterPos, shadowInterNormal, shadowMeshIndex);
-		if (!shadowIntersect || (position - shadowInterPos).length() <= 0.0001f)
-		{
-			totalColor += mat.evaluateColorResponse(position, normal, lights[i], scene.camera());			
-		}
+		totalColor += evaluateRadiance(position, normal, mat, scene, lights[i]->getPosition(), lights[i]->colorResponse());
 	}
 	return totalColor;
 }

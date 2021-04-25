@@ -2,6 +2,7 @@
 
 #include<vector>
 #include"Vec3.h"
+#include"lodepng.h"
 #include<fstream>
 #include<string>
 #include <omp.h>
@@ -20,6 +21,7 @@ class Image
 		inline size_t getHeight() const { return height; }
 		std::vector<Vec3f> getColorVector() { return colors; }
 		void savePPM(std::string filename);
+		void savePNG(const char* file_path);
 		void fillBackground(Vec3f from, Vec3f to);
 		void setColors(std::vector<Vec3f> colors);
 		void setColorValue(size_t i, size_t j, Vec3f colorValue);

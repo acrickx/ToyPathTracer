@@ -190,7 +190,7 @@
 				const Vec3f& direction = pixelToDirection(i, j);
 				if (direction != Vec3f(0, 0, 0))
 				{
-					Vec3f pixelColor = color(i, j) * solidAgl * mat.evaluateColorResponse(m_gatheringPos,m_gatheringNormal,direction,eye);
+					Vec3f pixelColor = color(i, j) * solidAgl * mat.colorResponse(m_gatheringPos,m_gatheringNormal,direction,eye);
 					totalColorResponse += pixelColor;
 				}
 			}

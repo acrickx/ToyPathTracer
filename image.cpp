@@ -48,6 +48,31 @@ void Image::savePPM(std::string filename)
     ofs.close();
 }
 
+//Save in PNG format (james griffin implementation)
+inline double clamp(double x) { return x < 0 ? 0 : x>1 ? 1 : x; }
+inline int toInt(double x) { return int(clamp(x) * 255 + .5); }
+
+//using external library
+void Image::savePNG(const char* file_path)
+{
+    std::vector<unsigned char> pixel_buffer;
+    int pixel_count = width * height;
+
+    for (int i = 0; i < pixel_count; i++) {
+        pixel_buffer.push_back(toInt(colors[i][0]));
+        pixel_buffer.push_back(toInt(colors[i][1]));
+        pixel_buffer.push_back(toInt(colors[i][2]));
+        pixel_buffer.push_back(255);
+    }
+
+    //Encode the image
+    unsigned error = lodepng::encode(file_path, pixel_buffer, width, height);
+    //if there's an error, display it
+    if (error) std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+
+    pixel_buffer.clear();
+}
+
 void Image::fillBackground(Vec3f from, Vec3f to)
 {
     for (int j = 0; j < height; j++)

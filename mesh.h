@@ -3,67 +3,8 @@
 #include<fstream>
 #include<string>
 #include <omp.h>
-#include"lightSource.h"
-#include"camera.h"
 #include"boundingVolume.h"
-
-
-struct Material
-{
-public:
-	Vec3f albedo;
-	float diffuse;
-	float roughness;
-	float metallic;
-	Material() { albedo = Vec3f(0.5f, 0.5f, 0.5f); diffuse = 1.f; roughness = 0.5f; metallic = 0.5f; }
-	Material(Vec3f _albedo, float _diffuse, float _roughness, float _specular) : albedo(_albedo), diffuse(_diffuse), roughness(_roughness), metallic(_specular) {};
-	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, const lightPtr& light, const Camera& eye) const {
-		float diffuseResponse(diffuse / (float)M_PI);
-		const Vec3f& wi = normalize(light->getPosition() - position);
-		Vec3f w0 = normalize(eye.getPosition() - position);		
-		const Vec3f& specularResponse = reflectance(wi, w0, normal);
-		Vec3f colorResponse = light->colorResponse() * (Vec3f(diffuseResponse)) * std::max(dot(normal, wi), 0.f);
-		return colorResponse;
-	};
-	Vec3f evaluateColorResponse(const Vec3f& position, const Vec3f& normal, const Vec3f& direction, const Vec3f& cameraPos) const {
-		float diffuseResponse(diffuse / (float)M_PI);
-		const Vec3f& wi = direction;
-		Vec3f w0 = normalize(cameraPos - position);		
-		const Vec3f& specularResponse = reflectance(wi, w0, normal);
-		Vec3f colorResponse = (Vec3f(diffuseResponse)+specularResponse) * std::max(dot(normal, wi), 0.f);
-		return colorResponse;
-	};
-private:
-	inline Vec3f reflectance(const Vec3f& wi,const Vec3f& wo,const Vec3f& n) const
-	{
-		float alpha = roughness * roughness;
-		Vec3f wh = normalize(wi + wo);
-		Vec3f F0(0.04f);
-		F0 = mix(F0, albedo, metallic);
-		float term1 = G_GGX(wi, wo, alpha, n);		
-		Vec3f term2 = F(std::max(dot(wi, wh), 0.f), F0);		
-		float term3 = D(alpha, wh, n);		
-		return term1*term2 *term3/(4 * dot(n, wi) * dot(n, wo));
-	}
-	float G(const Vec3f& w,const Vec3f& n, float alpha) const
-	{
-		return 2.0 * (dot(n, w)) / (dot(n, w) + sqrt(pow(alpha, 2) + (1 - pow(alpha, 2)) * pow(dot(n, w), 2)));
-	}
-
-	float G_GGX(const Vec3f& wi,const Vec3f& wo, float alpha,const Vec3f& n) const
-	{
-		return G(wi, n, alpha) * G(wo, n, alpha);
-	}
-
-	Vec3f F(float cosTheta,const Vec3f& f0) const
-	{
-		return f0 + (Vec3f(1.f, 1.f, 1.f) - f0) * pow(1.0 - cosTheta, 5.0);
-	}
-	float D(float alpha, const Vec3f& m,const Vec3f& n) const
-	{
-		return (pow(alpha, 2)) / (3.1415926 * pow((1 + pow(dot(n, m), 2) * (pow(alpha, 2) - 1)), 2));
-	}
-};
+#include"material.h"
 
 class Mesh
 {
@@ -112,14 +53,14 @@ static Mesh Plane(Vec3f center, Vec3f n, Vec3f u, float sideLength, Material mat
 	u.normalize();
 	//add an offset so that the aabb isn't flat
 	Vec3f v = normalize(cross(n, u));
-	Vec3f A = center+ 0.00001f*n - (u + v) * sideLength / 2.f;
+	Vec3f A = center + 0.0001f*n - (u + v) * sideLength / 2.f;
 	Vec3f B = center + (v - u) * sideLength / 2.f;
-	Vec3f C = center-0.000001f*n + (u + v) * sideLength / 2.f;
+	Vec3f C = center - 0.0001f*n + (u + v) * sideLength / 2.f;
 	Vec3f D = center + (u - v) * sideLength / 2.f;
 	plane.vertices() = std::vector<Vec3f>{ A,B,C,D };
 	plane.indices() = std::vector<Vec3i>{ Vec3i(0,1,2), Vec3i(0,2,3) };
-	plane.normals() = std::vector<Vec3f>{ n, n, n, n };
-	plane.boundingBox() = AABB(plane.vertices());
+	plane.normals() = std::vector<Vec3f>{ n, n, n, n };	
+	plane.boundingBox() = AABB(plane.vertices());	
 	return plane;
 }
 

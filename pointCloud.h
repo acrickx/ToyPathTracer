@@ -38,7 +38,7 @@ public:
 						//compute surfel attributes for best candidate and add to the list	
 						Vec3f samplePos = sampleP[k];
 						Vec3f sampleNorm = sampleN[k];
-						Vec3f sampleColor = RayTracer::shade(samplePos, sampleNorm, meshes[i].material(), scene);					
+						Vec3f sampleColor = RayTracer::directLightingShade(samplePos, sampleNorm, meshes[i].material(), scene);					
 						Surfel sampleSurfel = Surfel(samplePos, sampleNorm, sampleColor, sampleRad);
 						m_surfels.push_back(sampleSurfel);
 					}					

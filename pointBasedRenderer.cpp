@@ -86,7 +86,7 @@ Image PointBasedRenderer::renderPointCloud(const PointCloud& pointCloud, const S
 					renderImage(i, j) = surfelMat.albedo;
 					for (int l = 0; l < lights.size(); l++)
 					{
-						renderImage(i, j) += surfelMat.evaluateColorResponse(surfel.position, surfel.normal, lights[l], renderCam);
+						renderImage(i, j) += surfelMat.colorResponse(surfel.position, surfel.normal, lights[l], renderCam);
 					}
 				}				
 			}
@@ -99,4 +99,27 @@ Image PointBasedRenderer::renderPointCloud(const PointCloud& pointCloud, const S
 	}
 	std::cout << " coloredPixels : " << coloredPixel << " - Blank Pixels : " << blankPixel << std::endl;
 	return renderImage;
+}
+
+//FOR DEBUGGING MICROBUFFER AT A GIVEN LOCATION
+void debugMicrobuffer(Vec3f position, Vec3f normal, const Scene& scene, BSHnode::BSHptr root, std::string filename, std::vector<Surfel>& surfels)
+{
+	size_t size = 24;
+	float scale = 25.f;
+	surfels.clear();
+	surfels.resize(size * size);
+	surfels = std::vector<Surfel>(size * size);
+	MicroBuffer debugMb(size, position + 0.01f * normal, normal);
+	debugMb.fillMicroBuffer(root, surfels);
+	debugMb.postTraversalRayCasting(surfels);
+	Image debugImage(size * scale, size * scale);
+	int w = debugImage.getWidth(), h = debugImage.getHeight();
+	for (int j = 0; j < h; j++)
+	{
+		for (int i = 0; i < w; i++)
+		{
+			debugImage(i, h - 1 - j) = debugMb.color((size_t)(i / scale), (size_t)(j / scale));
+		}
+	}
+	debugImage.savePPM(filename);
 }

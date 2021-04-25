@@ -6,7 +6,7 @@ using namespace std;
 void Mesh::loadOFF(const string filename)
 {
 	AABB bbox{};
-	std::cout << "-Trying to open file..." << std::endl;
+	std::cout << "Trying to open file..." << std::endl;
 	ifstream in(filename, ifstream::in);	
 	std::string line;
 	getline(in, line); // OFF string (first line)
@@ -37,7 +37,7 @@ void Mesh::loadOFF(const string filename)
 		computeNormals();
 		//add boundingbox
 		m_boundingBox = bbox;
-		std::cout << "-Done loading model" << std::endl;
+		std::cout << "Done loading model." << std::endl;
 	}
 	else std::cout << "-Error opening File" << std::endl;
 	in.close();
