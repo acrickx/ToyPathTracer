@@ -36,7 +36,7 @@ public:
 
 	Vec3f evaluateDiffuseColorResponse(const Vec3f& normal, const Vec3f& direction) const {
 		float diffuseResponse(1 / (float)M_PI);
-		return diffuseResponse * std::max(dot(normal, direction), 0.f);
+		return albedo*diffuseResponse * std::max(dot(normal, direction), 0.f);
 	}
 
 	Ray pureDiffuseReflectedRay(const Vec3f& direction, Vec3f& position, const Vec3f& normal) const
