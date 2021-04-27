@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 {
     float aspectRatio = 1.f;
     size_t microBufferSize = 8;
-    size_t rayPerPixel = 16;
+    size_t rayPerPixel = 8;
     size_t width=512, height= width/aspectRatio;
     string filename="output.ppm";
     //"USAGE : ./MyRayTracer –width value -height value -output value -microbuffer value -rayperpixel value //
@@ -56,19 +56,19 @@ int main(int argc, char* argv[])
     }
     Image image(width, height);
     //MESHES
-    Mesh plane = Plane(Vec3f(0, -0.5f, 0), Vec3f(0, 1, 0), Vec3f(1, 0, 0), 1.f, Material(Vec3f(0.5f, 0.5f, 0.5f), 0.9f, 0.75f, 0.f));
-    Mesh topPlane = Plane(Vec3f(0, 0.5f, 0), Vec3f(0, -1, 0), Vec3f(1, 0, 0), 1.f, Material(Vec3f(0.5f, 0.5f, 0.5f), 0.9f, 1.0f, 0.f));
-    Mesh backPlane = Plane(Vec3f(0, 0, -0.5f), Vec3f(0, 0, 1), Vec3f(1, 0, 0), 1.f , Material(Vec3f(0.5f, 0.5f, 0.5f), 0.9f, 1.0f, 0.f));
-    Mesh leftPlane = Plane(Vec3f(-0.5f, 0, 0.f), Vec3f(1, 0, 0), Vec3f(0, 0, -1), 1.f, Material(Vec3f(0.5f, 0.0f, 0.0f), 0.9f, 1.0f, 0.f));
-    Mesh rightPlane = Plane(Vec3f(0.5f, 0, 0.f), Vec3f(-1, 0, 0), Vec3f(0, 0, 1), 1.f, Material(Vec3f(0.f, 0.5f, 0.f), 0.9f, 1.0f, 0.f));
-    Mesh model(Material(Vec3f(0.5f, 0.5f, 0.5f), .9f, 0.7f, 0.7f));
-    model.loadOFF("example.off");                
+    Mesh plane = Plane(Vec3f(0, -0.5f, 0), Vec3f(0, 1, 0), Vec3f(1, 0, 0), 1.f, Material(Vec3f(1.f, 1.f, 1.f), 0.9f, 0.75f, 0.f));
+    Mesh topPlane = Plane(Vec3f(0, 0.5f, 0), Vec3f(0, -1, 0), Vec3f(1, 0, 0), 1.f, Material(Vec3f(1.f, 1.f, 1.f), 0.9f, 1.0f, 0.f));
+    Mesh backPlane = Plane(Vec3f(0, 0, -0.5f), Vec3f(0, 0, 1), Vec3f(1, 0, 0), 1.f , Material(Vec3f(1.f, 1.f, 1.f), 0.9f, 1.0f, 0.f));
+    Mesh leftPlane = Plane(Vec3f(-0.5f, 0, 0.f), Vec3f(1, 0, 0), Vec3f(0, 0, -1), 1.f, Material(Vec3f(1.f, 0.0f, 0.0f), 0.9f, 1.0f, 0.f));
+    Mesh rightPlane = Plane(Vec3f(0.5f, 0, 0.f), Vec3f(-1, 0, 0), Vec3f(0, 0, 1), 1.f, Material(Vec3f(0.f, 1.f, 0.f), 0.9f, 1.0f, 0.f));
+    Mesh model(Material(Vec3f(1.f, 1.f, 1.f), .9f, 0.7f, 0.7f));
+    model.loadOFF("example_lowres.off");  
     //CAMERA
     Camera cam(Vec3f(0.f, 0.f, 0.8f), Vec3f(0, 0, 0.f), Vec3f(0, 1, 0), 60.f);
     //LIGHTS 
     lightPtr point = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(0.2f,0.0f,1.f), 1.0f));
     lightPtr point2 = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(-0.2f,0.0f,1.f), 1.0f));
-    std::vector<lightPtr> lights{point, point2};
+    std::vector<lightPtr> lights{point};
     //CREATE SCENE
     Scene scene(cam, std::vector<Mesh> {backPlane, leftPlane, rightPlane, topPlane, plane,model}, lights);    
     std::cout << "Computing BVH for raytracing ... \n";
