@@ -18,7 +18,7 @@ class Mesh
 		template <class T>
 		void parseLineToVec3(std::string in, Vec3<T>& const vec);
 	public:	
-		Mesh() {}
+		Mesh() : m_mat(Material(Vec3f(1, 1, 1), Diffuse)) {};
 		Mesh(Material _material) : m_mat(_material) {};
 		//loading model
 		void loadOFF(std::string filepath);
@@ -62,18 +62,6 @@ static Mesh Plane(Vec3f center, Vec3f n, Vec3f u, float sideLength, Material mat
 	plane.normals() = std::vector<Vec3f>{ n, n, n, n };	
 	plane.boundingBox() = AABB(plane.vertices());	
 	return plane;
-}
-
-static std::vector<Mesh> CornellBox(Vec3f origin, float scale)
-{
-	{
-		Mesh Left = Plane(origin - scale * Vec3f(1, 0, 0), Vec3f(1, 0, 0), Vec3f(0, 0, -1), scale, Material(Vec3f(1, 0, 0), 1.f, 1.f, 0));
-		Mesh Right = Plane(origin + scale * Vec3f(1, 0, 0), Vec3f(-1, 0, 0), Vec3f(0, 0, 1), scale, Material(Vec3f(0, 1, 0), 1.f, 1.f, 0));
-		Mesh Top = Plane(origin + scale * Vec3f(0, 1, 0), Vec3f(0, -1, 0), Vec3f(1, 0, 0), scale, Material(Vec3f(1, 1, 1), 1.f, 1.f, 0));
-		Mesh Bottom = Plane(origin - scale * Vec3f(0, 1, 0), Vec3f(0, 1, 0), Vec3f(1, 0, 0), scale, Material(Vec3f(1, 1, 1), 1.f, 1.f, 0));
-		Mesh Back = Plane(origin - scale * Vec3f(0, 0, 1), Vec3f(0, 0, 1), Vec3f(1, 0, 0), scale, Material(Vec3f(1, 1, 1), 1.f, 1.f, 0));
-		return std::vector<Mesh> {Back, Left, Right, Top, Bottom };
-	}
 }
 
 

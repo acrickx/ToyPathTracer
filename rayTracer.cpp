@@ -26,9 +26,9 @@ void RayTracer::render(const Scene& scene, Image& renderImage, size_t rayPerPixe
 				float rd_height = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 				Ray scatteredRay = renderCam.rayAt((i + rd_width) / (float)width, 1 - (j + rd_height) / (float)height);
 				//path tracing
-				totalColorResponse += pathTrace(scatteredRay, 0, scene, 0)/rayPerPixel;
+				totalColorResponse += pathTrace(scatteredRay,0, scene)/rayPerPixel;
+				//totalColorResponse += pathTrace(scatteredRay, scene)/rayPerPixel;
 			}
-			totalColorResponse = Vec3f(sqrt(totalColorResponse[0]), sqrt(totalColorResponse[1]), sqrt(totalColorResponse[2]));
 			renderImage(i, j) = totalColorResponse;			
 		}
 	}
@@ -46,26 +46,60 @@ Vec3f randomDirectionUnitSphere()
 	return point;
 }
 
-Vec3f RayTracer::pathTrace(Ray ray, size_t current, const Scene& scene, size_t maxBounces = 10)
+Vec3f RayTracer::pathTrace(const Ray& ray, size_t current, const Scene& scene, size_t maxBounces = 10)
 {
 	if (current > maxBounces) return Vec3f(0,0,0);		
 	Vec3f pathResponse(0,0,0);
 	Vec3f intersectionPos, intersectionNormal; size_t meshIndex;
-	if (RayTracer::rayTraceBVH(ray, scene, intersectionPos, intersectionNormal, meshIndex))
+	if (rayTraceBVH(ray, scene, intersectionPos, intersectionNormal, meshIndex))
 	{
 		//direct lighting contribution
 		Material hitMat = scene.meshes()[meshIndex].material();
-		Vec3f directLight = RayTracer::directLightingShade(intersectionPos, intersectionNormal, hitMat, scene);
+		Vec3f directLight = directLightingShade(intersectionPos, intersectionNormal, hitMat, scene);
 		current++;
 		//Uniform random sample of the directions
 		Vec3f target = intersectionPos + intersectionNormal + randomDirectionUnitSphere();
 		Ray segment = Ray(intersectionPos, target);
 		//Get recursively contribution of next bounce (indirect lighting contribution)
 		Vec3f indirectLightColor = pathTrace(segment, current, scene, maxBounces);
-		Vec3f indirectLight = indirectLightColor*hitMat.evaluateDiffuseColorResponse(intersectionNormal, normalize(segment.direction));		
-		pathResponse = directLight + indirectLight;		
+		Vec3f indirectLight = indirectLightColor*hitMat.colorResponse(intersectionNormal, normalize(segment.direction));		
+		pathResponse = directLight + indirectLight;
 	}	
 	return pathResponse;
+}
+
+Vec3f RayTracer::pathTrace(const Ray& ray, int depth, const Scene& scene) {
+
+	Vec3f intersectionPos, intersectionNormal; size_t meshIndex;
+	bool hit = RayTracer::rayTraceBVH(ray, scene, intersectionPos, intersectionNormal, meshIndex);
+	if (hit)
+	{
+		Material hitMat = scene.meshes()[meshIndex].material();
+		//if hit light return emission value
+		if (hitMat.matType == Emissive) return hitMat.emissive;
+
+		//get color at intersection
+		Vec3f color = hitMat.albedo;
+
+		// Russian roulette termination
+		double rnd = (double)rand()/RAND_MAX;
+		if (++depth > 5)
+		{
+			if (rnd < 0.5f) 
+			{ 
+				color = color * (0.9f / 0.5f);// Multiply by 0.9 to avoid infinite loop with colours of 1.0
+			}
+			else 
+			{
+				return hitMat.emissive / 0.5f;
+			}
+		}
+		//get reflected ray
+		Vec3f target = intersectionPos + intersectionNormal + randomDirectionUnitSphere();
+		Ray reflected = Ray(intersectionPos, target);
+		return color * pathTrace(reflected, depth, scene);
+	}
+	return Vec3f(0, 0, 0);
 }
 
 //actually raytrace the scene with a given ray (loop over all triangles)
@@ -131,7 +165,7 @@ Vec3f RayTracer::evaluateRadiance(const Vec3f& position, const Vec3f& normal, co
 	{		
 		return Vec3f(0,0,0);
 	}
-	return lightColor*mat.evaluateDiffuseColorResponse(normalize(normal), normalize(lightPos - position));
+	return lightColor*mat.colorResponse(normalize(normal), normalize(lightPos - position));
 }
 
 Vec3f RayTracer::directLightingShade(const Vec3f& position, const Vec3f& normal, const Material& mat, const Scene& scene)
