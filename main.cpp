@@ -19,9 +19,9 @@ int main(int argc, char* argv[])
 {
     float aspectRatio = 1.f;
     size_t microBufferSize = 8;
-    size_t rayPerPixel = 16;
-    size_t width=512, height= 512;
-    string filename="output.ppm";
+    size_t rayPerPixel = 1;
+    size_t width = 720, height = 720;
+    string filename="output.png";
     //"USAGE : ./MyRayTracer –width value -height value -output value -microbuffer value -rayperpixel value //
     if (argc >1)
     {
@@ -62,9 +62,9 @@ int main(int argc, char* argv[])
     Mesh leftPlane = Plane(Vec3f(-0.5f, 0, 0.f), Vec3f(1, 0, 0), Vec3f(0, 0, -1), 1.f, Material(Vec3f(1.f, 0.0f, 0.0f), Diffuse));
     Mesh rightPlane = Plane(Vec3f(0.5f, 0, 0.f), Vec3f(-1, 0, 0), Vec3f(0, 0, 1), 1.f, Material(Vec3f(0.f, 1.f, 0.f), Diffuse));
     Mesh model(Material(Vec3f(1.f, 1.f, 1.f), Diffuse));
-    model.loadOFF("example_lowres.off");  
+    model.loadOFF("example_lowres.off");
     //CAMERA
-    Camera cam(Vec3f(0.f, 0.f, 0.8f), Vec3f(0, 0, 0.f), Vec3f(0, 1, 0), 60.f);
+    Camera cam(Vec3f(0.f, 0.f, 1.0f), Vec3f(0, 0, 0.f), Vec3f(0, 1, 0), 90.f, 1.0f);
     //LIGHTS 
     lightPtr point = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(0.2f,0.0f,1.f), 2.0f));
     lightPtr point2 = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(-0.2f,0.0f,1.f), 4.0f));

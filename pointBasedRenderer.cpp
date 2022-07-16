@@ -25,8 +25,14 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 			for (int k = 0; k < rayPerPixel; k++)
 			{
 				Ray scatteredRay;
-				if (rayPerPixel == 1) scatteredRay = Ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate((float(i) / width), (1.f - (float)j / height))));
-				else scatteredRay = Ray(renderCam.getPosition(), normalize(renderCam.getImageCoordinate(float(i) / width + ((std::rand() % 100) / (float)100) * (1 / (float)width), 1.f - (((float)j / height) + ((std::rand() % 100) / (float)100) * (1 / (float)height)))));
+				Vec3f direction = normalize(renderCam.getPosition() - renderCam.getImageCoordinate((float(i) / width), (1.f - (float)j / height)));
+				if (rayPerPixel == 1) scatteredRay = Ray(renderCam.getPosition(), direction);
+				else
+				{
+					// jittering
+					Vec3f jitteredDirection = normalize(renderCam.getPosition() - renderCam.getImageCoordinate(float(i) / width + ((std::rand() % 100) / (float)100) * (1 / (float)width), 1.f - (((float)j / height) + ((std::rand() % 100) / (float)100) * (1 / (float)height))));
+					scatteredRay = Ray(renderCam.getPosition(), jitteredDirection);
+				}
 				Vec3f intersectionPos, intersectionNormal; size_t meshIndex;
 				bool intersectionFound = RayTracer::rayTraceBVH(scatteredRay, scene, intersectionPos, intersectionNormal, meshIndex);
 				if (intersectionFound)
@@ -68,7 +74,8 @@ Image PointBasedRenderer::renderPointCloud(const PointCloud& pointCloud, const S
 		for (int i = 0; i < width; i++)
 		{
 			//create rays for intersection test
-			Ray ray(renderCam.getPosition(), renderCam.getImageCoordinate(i/(float)width, 1.f - j/(float)height));
+			Vec3f direction = normalize(renderCam.getPosition() - renderCam.getImageCoordinate(i / (float)width, 1.f - j / (float)height));
+			Ray ray(renderCam.getPosition(), direction);
 			float zbuffer = std::numeric_limits<float>().max();
 			bool intersect = false;
 			#pragma omp parallel for

@@ -127,7 +127,8 @@
 		{
 			for (int i = 0; i < m_width; i++)
 			{
-				Ray ray(m_gatheringPos, pixelToDirection(i, j));
+				Vec3f direction = normalize(m_gatheringPos - pixelToDirection(i, j));
+				Ray ray(m_gatheringPos, direction);
 				#pragma omp parallel for
 				for (int k = 0; k < m_postTraversalList.size(); k++)
 				{
@@ -155,7 +156,8 @@
 		{
 			for (int i = 0; i < m_width; i++)
 			{
-				Ray ray(m_gatheringPos, pixelToDirection(i, j));
+				Vec3f direction = normalize(m_gatheringPos - pixelToDirection(i, j));
+				Ray ray(m_gatheringPos, direction);
 				#pragma omp parallel for
 				for (int k = 0; k < m_postTraversalList.size(); k++)
 				{

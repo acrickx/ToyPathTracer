@@ -47,7 +47,7 @@ public:
 		Vec3f v = cross(w,u);
 		Vec3f d = normalize(u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2));
 		Ray reflected;
-		reflected.origin = position+0.01f*normal; reflected.direction = d;
+		reflected.m_origin = position+0.01f*normal; reflected.m_direction = d;
 		return reflected;
 	}
 

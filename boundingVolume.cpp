@@ -7,9 +7,9 @@ bool AABB::hit(Ray ray, float& tmin, float& tmax) const
 	//look for both intersections time in each direction
 	for (int i = 0; i < 3; i++)
 	{
-		float invD = 1.0f / (float)ray.direction[i];
-		float t0 = (m_minCorner[i] - ray.origin[i]) * invD;
-		float t1 = (m_maxCorner[i] - ray.origin[i]) * invD;
+		float invD = 1.0f / (float)ray.m_direction[i];
+		float t0 = (m_minCorner[i] - ray.m_origin[i]) * invD;
+		float t1 = (m_maxCorner[i] - ray.m_origin[i]) * invD;
 		//swap order if ray goes in negative direction
 		if (invD < 0) { std::swap(t0, t1); } 
 		tmin = t0 > tmin ? t0 : tmin;
@@ -26,9 +26,9 @@ bool AABB::hit(Ray ray) const
 	//look for both intersections time in each direction
 	for (int i = 0; i < 3; i++)
 	{
-		float invD = 1.0f / (float)ray.direction[i];
-		float t0 = (m_minCorner[i] - ray.origin[i]) * invD;
-		float t1 = (m_maxCorner[i] - ray.origin[i]) * invD;
+		float invD = 1.0f / (float)ray.m_direction[i];
+		float t0 = (m_minCorner[i] - ray.m_origin[i]) * invD;
+		float t1 = (m_maxCorner[i] - ray.m_origin[i]) * invD;
 		//swap order if ray goes in negative direction
 		if (invD < 0) { std::swap(t0, t1); }
 		tmin = t0 > tmin ? t0 : tmin;

@@ -20,14 +20,18 @@ void RayTracer::render(const Scene& scene, Image& renderImage, size_t rayPerPixe
 		{
 			//create rays for intersection test
 			Vec3f totalColorResponse(0,0,0);			
-			for (int k = 0; k < rayPerPixel; k++)
+			for (int k = 0; k < 1; k++)
 			{
 				float rd_width = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 				float rd_height = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 				Ray scatteredRay = renderCam.rayAt((i + rd_width) / (float)width, 1 - (j + rd_height) / (float)height);
-				//path tracing
-				totalColorResponse += pathTrace(scatteredRay,0, scene)/rayPerPixel;
-				//totalColorResponse += pathTrace(scatteredRay, scene)/rayPerPixel;
+				//Ray tracing 
+				Vec3f hitPosition, hitNormal;
+				size_t meshIndex;
+				rayTraceBVH(scatteredRay, scene, hitPosition, hitNormal, meshIndex);
+				Material hitMat = scene.meshes()[meshIndex].material();
+				Vec3f directLight = directLightingShade(hitPosition, hitNormal, hitMat, scene);
+				totalColorResponse = hitMat.albedo;
 			}
 			renderImage(i, j) = totalColorResponse;			
 		}
@@ -58,11 +62,11 @@ Vec3f RayTracer::pathTrace(const Ray& ray, size_t current, const Scene& scene, s
 		Vec3f directLight = directLightingShade(intersectionPos, intersectionNormal, hitMat, scene);
 		current++;
 		//Uniform random sample of the directions
-		Vec3f target = intersectionPos + intersectionNormal + randomDirectionUnitSphere();
-		Ray segment = Ray(intersectionPos, target);
+		Vec3f direction = normalize(intersectionNormal + randomDirectionUnitSphere());
+		Ray segment = Ray(intersectionPos, direction);
 		//Get recursively contribution of next bounce (indirect lighting contribution)
 		Vec3f indirectLightColor = pathTrace(segment, current, scene, maxBounces);
-		Vec3f indirectLight = indirectLightColor*hitMat.colorResponse(intersectionNormal, normalize(segment.direction));		
+		Vec3f indirectLight = indirectLightColor*hitMat.colorResponse(intersectionNormal, normalize(segment.m_direction));		
 		pathResponse = directLight + indirectLight;
 	}	
 	return pathResponse;
@@ -95,8 +99,8 @@ Vec3f RayTracer::pathTrace(const Ray& ray, int depth, const Scene& scene) {
 			}
 		}
 		//get reflected ray
-		Vec3f target = intersectionPos + intersectionNormal + randomDirectionUnitSphere();
-		Ray reflected = Ray(intersectionPos, target);
+		Vec3f direction =  normalize(intersectionNormal + randomDirectionUnitSphere());
+		Ray reflected = Ray(intersectionPos, direction);
 		return color * pathTrace(reflected, depth, scene);
 	}
 	return Vec3f(0, 0, 0);
@@ -159,7 +163,7 @@ bool RayTracer::rayTraceBVH(const Ray& ray, const Scene& scene, Vec3f& intersect
 //evaluate radiance at a given position
 Vec3f RayTracer::evaluateRadiance(const Vec3f& position, const Vec3f& normal, const Material& mat, const Scene& scene, const Vec3f& lightPos, const Vec3f& lightColor)
 {	
-	Ray shadowRay = Ray(position, lightPos);
+	Ray shadowRay = Ray(position, normalize(lightPos - position));
 	Vec3f shadowInterPos, shadowInterNormal; size_t shadowMeshIndex;	
 	if (RayTracer::rayTraceBVH(shadowRay, scene, shadowInterPos, shadowInterNormal, shadowMeshIndex))
 	{		

@@ -97,7 +97,7 @@
      if (m_aabb.hit(ray, tmin, tmax) || m_connectivity.size()==0)
      {   
          //Stop condition : node is leaf
-         if (m_connectivity.size() <= 1)
+         if (m_connectivity.size() <= 8)
          {                          
              bool test = false;
              for (int i = 0; i < m_connectivity.size(); i++)
