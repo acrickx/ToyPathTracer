@@ -58,7 +58,7 @@ Image PointBasedRenderer::renderPointCloud(const PointCloud& pointCloud, const S
 	std::vector<Surfel> surfels = pointCloud.surfels();
 	std::vector<lightPtr> lights = scene.lightSources();
 	Camera renderCam = scene.camera();	
-	Material surfelMat(Vec3f(1,1,1), Diffuse);
+	Material surfelMat(Vec3f(1,1,1));
 	int coloredPixel=0;
 	int blankPixel = 0;
 	//fill background of the image with arbitrary color
@@ -93,7 +93,7 @@ Image PointBasedRenderer::renderPointCloud(const PointCloud& pointCloud, const S
 					renderImage(i, j) = surfelMat.albedo;
 					for (int l = 0; l < lights.size(); l++)
 					{
-						renderImage(i, j) += surfelMat.colorResponse(surfel.position, surfel.normal);
+						renderImage(i, j) += surfelMat.evaluateDiffuseColorResponse(surfel.position, surfel.normal);
 					}
 				}				
 			}

@@ -3,7 +3,7 @@
  BVHnode::BVHnode(const std::vector<Vec3i>& connectivity, const AABB& aabb, const Mesh& mod, int meshIndex)
 {
     //std::cout << "size : " << connectivity.size() << std::endl;
-    //stop condition
+    // Stop condition
     if (connectivity.size() <= 1)
     {
         m_connectivity = connectivity;
@@ -109,7 +109,7 @@
                      hitRecord.barCoord = barCoord;
                      hitRecord.parT = t;
                      hitRecord.meshIndex = m_meshIndex;
-                     hitRecord.triangleIndices = m_connectivity[0];
+                     hitRecord.triangleIndices = m_connectivity[i];
                      test = true;
                  }
              }

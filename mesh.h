@@ -1,7 +1,7 @@
 #pragma once
-#include<vector>
-#include<fstream>
-#include<string>
+#include <vector>
+#include <fstream>
+#include <string>
 #include <omp.h>
 #include"boundingVolume.h"
 #include"material.h"
@@ -18,10 +18,11 @@ class Mesh
 		template <class T>
 		void parseLineToVec3(std::string in, Vec3<T>& const vec);
 	public:	
-		Mesh() : m_mat(Material(Vec3f(1, 1, 1), Diffuse)) {};
+		Mesh() : m_mat(Vec3f(1, 0, 1), 1.0f, 0.0f, 0.0f) {};
 		Mesh(Material _material) : m_mat(_material) {};
 		//loading model
-		void loadOFF(std::string filepath);
+		void loadOFF(const std::string filepath);
+		void loadOBJ(const std::string filepath);
 		void scale(float scale) { for (int i = 0; i < m_vertices.size(); i++) { m_vertices[i] *= scale; } m_boundingBox.min() *= scale; m_boundingBox.max() *= scale; }
 		void translate(Vec3f translate) { for (int i = 0; i < m_vertices.size(); i++) { m_vertices[i] += translate; } m_boundingBox.min() += translate; m_boundingBox.max() += translate; }
 		//normal computations
