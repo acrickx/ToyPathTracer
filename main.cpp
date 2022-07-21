@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 {
     float aspectRatio = 1.f;
     size_t microBufferSize = 8;
-    size_t rayPerPixel = 1;
+    size_t rayPerPixel = 8;
     size_t width = 700, height = 700;
     string filename="output.png";
     //"USAGE : ./MyRayTracer –width value -height value -output value -microbuffer value -rayperpixel value //
@@ -63,16 +63,16 @@ int main(int argc, char* argv[])
     Mesh rightPlane = Plane(Vec3f(0.5f, 0, 0.f), Vec3f(-1, 0, 0), Vec3f(0, 0, 1), 1.f, Material(Vec3f(0.f, 0.f, 0.8f)));
     Mesh model(Material(Vec3f(1.0f, 0.5f, 1.f)));
     //model.loadOFF("example.off");
-    model.loadOBJ("cow_tri_rotated.obj");
+    model.loadOBJ("cow.obj");
     model.scale(0.6f);
-    model.translate(Vec3f(0.f, -0.15f, 0.1f));
+    model.translate(Vec3f(0.f, -0.35f, 0.f));
     model.computeNormals();
     //CAMERA
-    Camera cam(Vec3f(0.f, 0.f, 1.2f), Vec3f(0, 0, 0.f), Vec3f(0, 1, 0), 90.f, 1.0f);
+    Camera cam(Vec3f(0.f, 0.f, 1.2f), Vec3f(0, 0, 0.f), Vec3f(0, 1, 0), 60.f, 1.0f);
     //LIGHTS 
     lightPtr point = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(0.2f,0.0f,1.f), 2.0f));
+    lightPtr pointCenter = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(0, 0.4f, 0), 2.0f));
     lightPtr point2 = lightPtr(new PointLight(Vec3f(1, 1, 1), Vec3f(-0.2f,0.0f,1.f), 2.0f));
-    lightPtr area = lightPtr(new AreaLight(Vec3f(1,1,1), Vec3f(0, 0.4f, 0), 30.f, 0.4f, Vec3f(0,0,0)));
     std::vector<lightPtr> lights{point};
     //CREATE SCENE
     Scene scene(cam, std::vector<Mesh> {backPlane, leftPlane, rightPlane, topPlane, plane,model}, lights);    

@@ -7,7 +7,7 @@ struct Ray
 	Ray(const Vec3f& origin, const Vec3f&  direction) : m_origin(origin), m_direction(direction) {};	
 	Ray() : m_origin(Vec3f(0, 0, 0)), m_direction(Vec3f(0, 0, 1)) {};
 
-	const bool testTriangleIntersection(const Vec3<Vec3f>& trianglePos, Vec3f& barCoord, float& parT, float threshold = 0.0001f) const
+	const bool testTriangleIntersection(const Vec3<Vec3f>& trianglePos, Vec3f& barCoord, float& parT, float threshold = 0.000001f) const
 	{
 		Vec3f e0 = trianglePos[1] - trianglePos[0];
 		Vec3f e1 = trianglePos[2] - trianglePos[0];		
