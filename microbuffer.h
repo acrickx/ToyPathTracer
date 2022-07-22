@@ -24,6 +24,7 @@ public:
 		m_zBuffer = std::vector<float>(size * size, std::numeric_limits<float>().max());
 		m_indexBuffer = std::vector<BSHnode::BSHptr>(size * size);
 	};
+
 	//accessors
 	const size_t size() const { return m_width; }
 	inline const Vec3f color(size_t i, size_t j) const { return m_colors[j * m_width + i]; }
@@ -43,7 +44,7 @@ public:
 	void fillMicroBuffer(BSHnode::BSHptr node, std::vector<Surfel>& surfels);
 	void postTraversalRayCasting();
 	void postTraversalRayCasting(std::vector<Surfel>& surfels);
-	Vec3f convolveBRDF(const Material& mat, const Scene& scene);	
+	Vec3f convolveBRDF(const MaterialGGX& mat, const Scene& scene);	
 
 private:
 	size_t m_width = 0;

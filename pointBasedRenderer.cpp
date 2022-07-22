@@ -41,7 +41,7 @@ Image PointBasedRenderer::render(const Scene& scene, const PointCloud& pointClou
 					MicroBuffer mBuffer(microBufferSize, intersectionPos + 0.01f * intersectionNormal, intersectionNormal);
 					mBuffer.fillMicroBuffer(root);
 					mBuffer.postTraversalRayCasting();
-					const Material& mat = scene.meshes()[meshIndex].material();
+					MaterialGGX mat{};
 					totalColorResponse += mBuffer.convolveBRDF(mat, scene)/(float)rayPerPixel;
 					intersection = true;
 				}
@@ -58,7 +58,7 @@ Image PointBasedRenderer::renderPointCloud(const PointCloud& pointCloud, const S
 	std::vector<Surfel> surfels = pointCloud.surfels();
 	std::vector<lightPtr> lights = scene.lightSources();
 	Camera renderCam = scene.camera();	
-	Material surfelMat(Vec3f(1,1,1));
+	MaterialGGX surfelMat = MaterialGGX(Vec3f(1,1,1));
 	int coloredPixel=0;
 	int blankPixel = 0;
 	//fill background of the image with arbitrary color
@@ -93,7 +93,7 @@ Image PointBasedRenderer::renderPointCloud(const PointCloud& pointCloud, const S
 					renderImage(i, j) = surfelMat.albedo;
 					for (int l = 0; l < lights.size(); l++)
 					{
-						renderImage(i, j) += surfelMat.evaluateDiffuseColorResponse(surfel.position, surfel.normal);
+						renderImage(i, j) += surfelMat.evalBSDFCosine(intersectionPos, surfel.normal, direction, renderCam.getPosition());
 					}
 				}				
 			}

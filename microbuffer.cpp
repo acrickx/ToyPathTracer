@@ -180,7 +180,7 @@
 	}
 
 	//convolve microbuffer with BRDF
-	Vec3f MicroBuffer::convolveBRDF(const Material& mat, const Scene& scene)
+	Vec3f MicroBuffer::convolveBRDF(const MaterialGGX& mat, const Scene& scene)
 	{			
 		const Vec3f& eye = scene.camera().getPosition();
 		Vec3f totalColorResponse = mat.albedo;
@@ -192,7 +192,7 @@
 				const Vec3f& direction = pixelToDirection(i, j);
 				if (direction != Vec3f(0, 0, 0))
 				{
-					Vec3f pixelColor = color(i, j) * solidAgl * mat.evaluateDiffuseColorResponse(m_gatheringPos,m_gatheringNormal);
+					Vec3f pixelColor = color(i, j) * solidAgl * mat.diffuseBSDFCosine(m_gatheringNormal, direction);
 					totalColorResponse += pixelColor;
 				}
 			}

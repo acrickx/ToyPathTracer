@@ -1,4 +1,5 @@
 #include "mesh.h"
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
@@ -154,7 +155,7 @@ void Mesh::computeNormals()
 	vector<size_t> neighboursCount(m_vertices.size());
 	for (size_t i = 0; i < m_indices.size(); i++)
 	{
-		Vec3f normal = computeNormal(triangle(m_indices[i]));
+		Vec3f normal = GeometryHelper::computeTriangleNormal(triangle(m_indices[i]));
 		for (int j = 0; j < 3; j++)
 		{
 			m_normals[m_indices[i][j]] += normal;
